@@ -1,0 +1,93 @@
+.box {
+  --fg-color: var(--c0);
+  --bg-color: var(--c3);
+  --fg-color-strong: var(--c0);
+  --bg-color-strong: var(--c3);
+  --border-color: var(--c1);
+  --border-color-strong: var(--c0);
+  --shadow-color: var(--c2);
+  --drop-shadow-color: var(--c1);
+
+  padding: var(--spc) var(--spc-double);
+  background: var(--bg-color);
+  color: var(--fg-color);
+  border-radius: var(--spc-half);
+}
+
+.box.topLevel {
+  box-shadow: -.25rem .25rem 0 var(--drop-shadow-color);
+}
+
+.boxPrimary {
+  composes: box;
+  --fg-color: var(--c0);
+  --bg-color: var(--c3);
+  --fg-color-strong: var(--c0);
+  --bg-color-strong: var(--c3);
+  --border-color: var(--c1);
+  --border-color-strong: var(--c0);
+  --shadow-color: var(--c2);
+  --drop-shadow-color: var(--c1);
+}
+
+.boxSecondary {
+  composes: box;
+  --fg-color: var(--c0);
+  --bg-color: var(--c2);
+  --fg-color-strong: var(--c0);
+  --bg-color-strong: var(--c3);
+  --border-color: var(--c1);
+  --border-color-strong: var(--c0);
+  --shadow-color: var(--c1);
+  --drop-shadow-color: var(--c1);
+}
+
+.boxTertiary {
+  composes: box;
+  --fg-color: var(--c3);
+  --bg-color: var(--c1);
+  --fg-color-strong: var(--c3);
+  --bg-color-strong: var(--c0);
+  --border-color: var(--c2);
+  --border-color-strong: var(--c3);
+  --shadow-color: var(--c0);
+  --drop-shadow-color: var(--c00);
+}
+
+.boxSection {
+  margin-left: calc(var(--spc-double) * -1);
+  margin-right: calc(var(--spc-double) * -1);
+  padding: var(--spc) var(--spc-double);
+}
+
+.boxTitle {
+  composes: boxSection;
+  margin-top: 0;
+  margin-bottom: 0;
+  text-shadow: .0625rem .0625rem 0 var(--shadow-color);
+}
+
+.boxTitle:first-child,
+.boxSection:first-child {
+  margin-top: calc(var(--spc) * -1);
+}
+
+.boxTitle:last-child,
+.boxSection:last-child {
+  margin-bottom: calc(var(--spc) * -1);
+}
+
+.boxTitle + .boxSection,
+.boxSection + .boxSection {
+  border-top: solid .125rem var(--border-color);
+}
+
+@media screen and (min-width: 600px) {
+  .box {
+    margin: var(--spc);
+  }
+
+  .box.top-level {
+    border-radius: var(--spc);
+  }
+}
