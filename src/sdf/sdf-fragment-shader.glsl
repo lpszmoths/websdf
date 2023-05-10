@@ -1,10 +1,8 @@
-glsl
-#version 330
-
-in vec4 aColor;
-out vec4 FragColor;
+precision highp float;
+uniform sampler2D uTexture;
+varying vec2 vTexCoord;
 
 void main()
 {
-    FragColor = aColor;
+  gl_FragColor = texture2D(uTexture, vTexCoord);
 }

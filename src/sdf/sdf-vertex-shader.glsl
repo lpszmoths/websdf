@@ -1,10 +1,9 @@
-glsl
-#version 330
-
-in vec3 aPos;
-out vec4 aColor;
+attribute vec2 aPos;
+attribute vec2 aTexCoord;
+varying vec2 vTexCoord;
 
 void main()
 {
-    gl_FragColor = aColor;
+  gl_Position = vec4(aPos, 0.0, 1.0);
+  vTexCoord = aTexCoord;
 }

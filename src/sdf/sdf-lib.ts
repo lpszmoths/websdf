@@ -2,13 +2,23 @@ import { SDFConverterOverflowMode } from './sdf-constants'
 import vertexShaderSource from './sdf-vertex-shader.glsl'
 import fragmentShaderSource from './sdf-fragment-shader.glsl'
 
+console.log(vertexShaderSource)
+console.log(fragmentShaderSource)
+
 const VERTICES = [
-  -0.5,0.5,0.0,
-  -0.5,-0.5,0.0,
-  0.5,-0.5,0.0,
-];
+  -1, -1,
+  1, -1,
+  1, 1,
+  -1, 1
+]
+const UVs = [
+  0, 0,
+  1, 0,
+  1, 1,
+  0, 1
+]
 const INDICES = [
-  0, 1, 2
+  0, 1, 2, 3
 ]
 
 /**
@@ -55,7 +65,7 @@ function createGLCanvas(
 }
 
 function setCorrectCanvasSize(
-  inputTexture: ImageData,
+  inputTexture: HTMLImageElement,
   overflowMode: SDFConverterOverflowMode,
   canvas: HTMLCanvasElement
 ) {
@@ -77,7 +87,7 @@ function setCorrectCanvasSize(
  * @returns 
  */
 export async function generateSDF(
-  inputTexture: ImageData,
+  inputTexture: HTMLImageElement,
   { radiusX, radiusY, overflowMode }: SDFGenerationOptions
 ): Promise<string> {
   const {
@@ -117,7 +127,7 @@ export async function generateSDF(
 }
 
 export async function renderSDFToCanvas(
-  inputTexture: ImageData,
+  inputTexture: HTMLImageElement,
   { radiusX, radiusY, overflowMode }: SDFGenerationOptions,
   canvas: HTMLCanvasElement
 ): Promise<void> {
@@ -160,24 +170,57 @@ export async function renderSDFToCanvas(
   gl.linkProgram(shaderProgram)
   gl.useProgram(shaderProgram)
 
+  // create texture
+  const texture = gl.createTexture()
+  if (!texture) {
+    throw new Error('Unable to create texture')
+  }
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  if (overflowMode === SDFConverterOverflowMode.WRAP) {
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+  }
+  else {
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  }
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputTexture)
+
   // create buffers
   const vertexBuffer = gl.createBuffer()
-  const indexBuffer = gl.createBuffer()
-  
-  // bind
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-
-  // populate buffers
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(VERTICES), gl.STATIC_DRAW)
+  const uvBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer)
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(UVs), gl.STATIC_DRAW)
+  const indexBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(INDICES), gl.STATIC_DRAW)
 
+  // set up vertex pos
+  const vertexPosLocation = gl.getAttribLocation(shaderProgram, "aPos")
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
+  gl.enableVertexAttribArray(vertexPosLocation)
+  gl.vertexAttribPointer(vertexPosLocation, 2, gl.FLOAT, false, 0, 0)
+
+  // set up UVs
+  const uvLocation = gl.getAttribLocation(shaderProgram, "aTexCoord")
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer)
+  gl.enableVertexAttribArray(uvLocation)
+  gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 0, 0)
+
+  // set up texture
+  const textureLocation = gl.getUniformLocation(shaderProgram, "uTexture")
+  gl.uniform1i(textureLocation, 0)
+
   // render
-  gl.clearColor(0.5, 0.5, 0.5, 0.9)
-  gl.enable(gl.DEPTH_TEST)
-  gl.clear(gl.COLOR_BUFFER_BIT)
-  gl.viewport(0, 0, canvas.width, canvas.height)
-  gl.drawElements(gl.TRIANGLE_STRIP, INDICES.length, gl.UNSIGNED_SHORT,0)
+  gl.clearColor(0.6, 0.4, 0.5, 0.9)
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  //gl.viewport(0, 0, canvas.width, canvas.height)
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
 
   // unbind
   gl.bindBuffer(gl.ARRAY_BUFFER, null)

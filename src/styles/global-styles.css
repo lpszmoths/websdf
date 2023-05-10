@@ -20,7 +20,7 @@
   --c4: #c9cca1;
 
   --c00: #000;
-  --c0: #00303b;
+  --c0: hsl(186, 100%, 15%);
   --c1: #ff7777;
   --c2: #ffce96;
   --c3: #f1f2da;
@@ -227,8 +227,8 @@ main {
 .card {
   display: flex;
   flex-direction: column;
-  border: solid .125rem var(--border-color);
-  box-shadow: .125rem .125rem 0 var(--border-color);
+  border: solid .125rem var(--shadow-color);
+  box-shadow: .125rem .125rem 0 var(--shadow-color);
 }
 
 .inline {
