@@ -12,22 +12,27 @@ import { APP_NAME } from '@/app-constants'
 export interface SDFIfyPageProps { }
 
 export default function SDFIfyPage({ }: SDFIfyPageProps) {
-  const [inputImage, setInputImage] = React.useState<string>()
+  const [inputImage, setInputImage] = React.useState<Blob | null>()
+  const [inputImageURL, setInputImageURL] = React.useState<string>()
   const [radiusX, setRadiusX] = React.useState<number>(64)
   const [radiusY, setRadiusY] = React.useState<number>(64)
   const [overflowMode, setOverflowMode] = React.useState<SDFConverterOverflowMode>(
     SDFConverterOverflowMode.CLIP
   )
-  const [outputImage, setOutputImage] = React.useState<Blob | undefined>(undefined)
+  const [outputImageURL, setOutputImageURL] = React.useState<string>()
 
   const onInputFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length >= 1) {
       const file: File = e.target.files![0]
       const url: string = URL.createObjectURL(file)
-      setInputImage(url)
+      setInputImage(file)
+      setInputImageURL(url)
+      setOutputImageURL('')
     }
     else {
-      setInputImage("")
+      setInputImage(null)
+      setInputImageURL("")
+      setOutputImageURL('')
     }
   }
 
@@ -41,12 +46,12 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
           radiusY,
           overflowMode,
         }
-      ).then((outputImageData: ImageData) => {
-        console.log('ok')
+      ).then((newOutputImageURL: string) => {
+        setOutputImageURL(newOutputImageURL)
       })
     }
     else {
-      setOutputImage(undefined)
+      setOutputImageURL('')
     }
   }, [
     inputImage,
@@ -86,7 +91,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
                         <div className='card inline'>
                           <img
                             className={imageStyles.imagePreview}
-                            src={inputImage}
+                            src={inputImageURL}
                             width="100%"
                             alt="Preview of the input image"
                           />
@@ -248,8 +253,13 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
                   ].join(' ')
                 }>
                   {
-                    outputImage ? (
+                    outputImageURL ? (
                       <div className='card inline'>
+                        <img
+                          className={imageStyles.imagePreview}
+                          src={outputImageURL}
+                          alt="Output image"
+                        />
                       </div>
                     ) : (
                       <p>Input image required</p>
