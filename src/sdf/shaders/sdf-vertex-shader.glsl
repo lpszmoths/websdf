@@ -1,6 +1,8 @@
-attribute vec2 aPos;
-attribute vec2 aTexCoord;
-varying vec2 vTexCoord;
+#version 300 es
+
+in vec2 aPos;
+in vec2 aTexCoord;
+out vec2 vTexCoord;
 
 void main()
 {

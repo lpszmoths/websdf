@@ -1,6 +1,6 @@
 import { SDFConverterOverflowMode } from './sdf-constants'
-import vertexShaderSource from './sdf-vertex-shader.glsl'
-import fragmentShaderSource from './sdf-fragment-shader.glsl'
+import vertexShaderSource from './shaders/sdf-vertex-shader.glsl'
+import fragmentShaderSource from './shaders/sdf-fragment-shader.glsl'
 
 console.log(vertexShaderSource)
 console.log(fragmentShaderSource)
@@ -144,6 +144,9 @@ export async function renderSDFToCanvas(
     throw new Error('Unable to create context. The device probably doesn\'t support WebGL 2.')
   }
 
+  // ensure dFdx/dFdy are available
+  console.log(gl.getSupportedExtensions())
+
   // create shaders
   const vertexShader = gl.createShader(gl.VERTEX_SHADER)
   if (!vertexShader) {
@@ -170,6 +173,41 @@ export async function renderSDFToCanvas(
   gl.linkProgram(shaderProgram)
   gl.useProgram(shaderProgram)
 
+  // set up destination framebuffer
+  const fragColorLocation = gl.getFragDataLocation(shaderProgram, 'outColor')
+  const framebuffer = gl.createFramebuffer()
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
+
+  // set up destination texture
+  const {
+    width: dstWidth,
+    height: dstHeight
+  } = canvas
+  const destinationTexture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, destinationTexture)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0, // lod
+    gl.RGBA, // internal format
+    dstWidth,
+    dstHeight,
+    0, // border
+    gl.RGBA, // format
+    gl.UNSIGNED_BYTE,
+    null
+  )
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER, // target
+    gl.COLOR_ATTACHMENT0 + fragColorLocation, // attachment slot
+    gl.TEXTURE_2D, // textarget
+    destinationTexture,
+    0
+  )
+  const fbStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+  if (fbStatus !== gl.FRAMEBUFFER_COMPLETE) {
+    throw new Error('Framebuffer not ready!')
+  }
+
   // create texture
   const texture = gl.createTexture()
   if (!texture) {
@@ -184,10 +222,11 @@ export async function renderSDFToCanvas(
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
   }
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
+  //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR)
+  //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR)
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputTexture)
+  gl.generateMipmap(gl.TEXTURE_2D)
 
   // create buffers
   const vertexBuffer = gl.createBuffer()
@@ -213,17 +252,18 @@ export async function renderSDFToCanvas(
   gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 0, 0)
 
   // set up texture
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
   const textureLocation = gl.getUniformLocation(shaderProgram, "uTexture")
   gl.uniform1i(textureLocation, 0)
 
   // render
   gl.clearColor(0.6, 0.4, 0.5, 0.9)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  //gl.viewport(0, 0, canvas.width, canvas.height)
   gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
 
   // unbind
-  gl.bindBuffer(gl.ARRAY_BUFFER, null)
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null)
+  //gl.bindBuffer(gl.ARRAY_BUFFER, null)
+  //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null)
 }
 
