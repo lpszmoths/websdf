@@ -30,17 +30,6 @@ export interface SDFGenerationOptions {
   overflowMode: SDFConverterOverflowMode
 }
 
-function makeHTMLElementInvisible(
-  element: HTMLElement
-) {
-  element.setAttribute('hidden', 'hidden')
-  element.style.visibility = 'hidden'
-  element.style.width = '0'
-  element.style.height = '0'
-  element.style.pointerEvents = 'none'
-  element.style.position = 'absolute'
-}
-
 function createGLCanvas(
   width: number,
   height: number
@@ -62,6 +51,50 @@ function createGLCanvas(
   }
 
   return canvas
+}
+
+function createSDFShaderProgram(gl: WebGL2RenderingContext): WebGLProgram {
+  // ensure dFdx/dFdy are available
+  console.log(gl.getSupportedExtensions())
+
+  // create shaders
+  const vertexShader = gl.createShader(gl.VERTEX_SHADER)
+  if (!vertexShader) {
+    throw new Error('Unable to create vertex shader.')
+  }
+  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
+  if (!fragmentShader) {
+    throw new Error('Unable to create vertex shader.')
+  }
+
+  // load shader code and compile
+  gl.shaderSource(vertexShader, vertexShaderSource)
+  gl.shaderSource(fragmentShader, fragmentShaderSource)
+  gl.compileShader(vertexShader)
+  gl.compileShader(fragmentShader)
+
+  // join both shaders into a shader program
+  const shaderProgram = gl.createProgram()
+  if (!shaderProgram) {
+    throw new Error('Unable to create shader program.')
+  }
+  gl.attachShader(shaderProgram, vertexShader)
+  gl.attachShader(shaderProgram, fragmentShader)
+  gl.linkProgram(shaderProgram)
+  gl.useProgram(shaderProgram)
+
+  return shaderProgram
+}
+
+function makeHTMLElementInvisible(
+  element: HTMLElement
+) {
+  element.setAttribute('hidden', 'hidden')
+  element.style.visibility = 'hidden'
+  element.style.width = '0'
+  element.style.height = '0'
+  element.style.pointerEvents = 'none'
+  element.style.position = 'absolute'
 }
 
 function setCorrectCanvasSize(
@@ -164,49 +197,7 @@ export async function renderSDFToCanvas(
   gl.compileShader(fragmentShader)
 
   // join both shaders into a shader program
-  const shaderProgram = gl.createProgram()
-  if (!shaderProgram) {
-    throw new Error('Unable to create shader program.')
-  }
-  gl.attachShader(shaderProgram, vertexShader)
-  gl.attachShader(shaderProgram, fragmentShader)
-  gl.linkProgram(shaderProgram)
-  gl.useProgram(shaderProgram)
-
-  // set up destination framebuffer
-  const fragColorLocation = gl.getFragDataLocation(shaderProgram, 'outColor')
-  const framebuffer = gl.createFramebuffer()
-  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
-
-  // set up destination texture
-  const {
-    width: dstWidth,
-    height: dstHeight
-  } = canvas
-  const destinationTexture = gl.createTexture()
-  gl.bindTexture(gl.TEXTURE_2D, destinationTexture)
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0, // lod
-    gl.RGBA, // internal format
-    dstWidth,
-    dstHeight,
-    0, // border
-    gl.RGBA, // format
-    gl.UNSIGNED_BYTE,
-    null
-  )
-  gl.framebufferTexture2D(
-    gl.FRAMEBUFFER, // target
-    gl.COLOR_ATTACHMENT0 + fragColorLocation, // attachment slot
-    gl.TEXTURE_2D, // textarget
-    destinationTexture,
-    0
-  )
-  const fbStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
-  if (fbStatus !== gl.FRAMEBUFFER_COMPLETE) {
-    throw new Error('Framebuffer not ready!')
-  }
+  const shaderProgram = createSDFShaderProgram(gl)
 
   // create texture
   const texture = gl.createTexture()
@@ -223,8 +214,6 @@ export async function renderSDFToCanvas(
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
   }
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
-  //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR)
-  //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR)
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputTexture)
   gl.generateMipmap(gl.TEXTURE_2D)
 
@@ -256,6 +245,12 @@ export async function renderSDFToCanvas(
   gl.bindTexture(gl.TEXTURE_2D, texture)
   const textureLocation = gl.getUniformLocation(shaderProgram, "uTexture")
   gl.uniform1i(textureLocation, 0)
+
+  // push SDF params
+  const radiusXlocation = gl.getUniformLocation(shaderProgram, "aRadiusX")
+  gl.uniform1f(radiusXlocation, radiusX)
+  const radiusYlocation = gl.getUniformLocation(shaderProgram, "aRadiusY")
+  gl.uniform1f(radiusYlocation, radiusY)
 
   // render
   gl.clearColor(0.6, 0.4, 0.5, 0.9)

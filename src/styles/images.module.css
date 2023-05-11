@@ -1,9 +1,12 @@
 .imagePreview {
   display: block;
   width: 100%;
+  box-shadow: var(--normal-box-shadow);
+}
+
+.imagePreview.small {
   max-width: 10em;
   max-height: 10em;
-  box-shadow: var(--normal-box-shadow);
 }
 
 .imagePreviewContainer {

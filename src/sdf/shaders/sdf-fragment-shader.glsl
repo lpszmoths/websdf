@@ -13,5 +13,8 @@ void main()
   float h = texture(uTexture, vTexCoord).r;
   float dx = dFdx(h);
   float dy = dFdy(h);
-  outColor = vec4(dx, 0.5, dy, 1.0);
+  float fw = fwidth(h);
+
+  dx = clamp(dx * 16.0, 0.0, 1.0);
+  outColor = vec4(dx, fw, dy, 1.0);
 }

@@ -49,7 +49,12 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
             }>
               <div className='card inline'>
                 <img
-                  className={imageStyles.imagePreview}
+                  className={
+                    [
+                      imageStyles.imagePreview,
+                      imageStyles.small,
+                    ].join(' ')
+                  }
                   src={inputImageURL}
                   width="100%"
                   alt="Preview of the input image"
