@@ -2,13 +2,19 @@
 
 import * as React from 'react'
 
-export interface SDFOverflowModeSelectorProps {
+export interface SDFRadiusInputProps {
+  initialRadiusX: number
+  initialRadiusY: number
   onChange: (newRadiusX: number, newRadiusY: number) => void
 }
 
-export default function SDFRadiusInput({ onChange }: SDFOverflowModeSelectorProps) {
-  const [radiusX, setRadiusX] = React.useState<number>(64)
-  const [radiusY, setRadiusY] = React.useState<number>(64)
+export default function SDFRadiusInput({
+  initialRadiusX,
+  initialRadiusY,
+  onChange
+}: SDFRadiusInputProps) {
+  const [radiusX, setRadiusX] = React.useState<number>(initialRadiusX)
+  const [radiusY, setRadiusY] = React.useState<number>(initialRadiusY)
 
   React.useEffect(() => {
     onChange(radiusX, radiusY)
@@ -27,6 +33,7 @@ export default function SDFRadiusInput({ onChange }: SDFOverflowModeSelectorProp
             <input
               type='number'
               value={radiusX}
+              min={0}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setRadiusX(parseInt(e.target.value))
               }}
@@ -39,6 +46,7 @@ export default function SDFRadiusInput({ onChange }: SDFOverflowModeSelectorProp
             <input
               type='number'
               value={radiusY}
+              min={0}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setRadiusY(parseInt(e.target.value))
               }}

@@ -4,6 +4,8 @@ import * as React from 'react'
 
 import imageStyles from '../styles/images.module.css'
 
+const SDF_EXTERNAL_LINK = 'https://en.wikipedia.org/wiki/Signed_distance_function'
+
 export interface ImageUploaderProps {
   onChange: (image: HTMLImageElement | null, imageURL: string | null) => void
 }
@@ -38,6 +40,8 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
 
   return (
     <>
+      <p>Provide an image to convert to a <a href={SDF_EXTERNAL_LINK} target='_blank'>signed distance field</a>. For best results, use a high resolution image made of solid, black-and-white shapes.</p>
+      {/* <p><strong>Note:</strong> This tool runs in your browser. The image will not be uploaded anywhere.</p> */}
       {
         inputImageURL ? (
           <div className='columns centered'>
@@ -79,6 +83,7 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
           type="file"
           id="input-image-upload"
           style={{ 'display': 'none' }}
+          accept='image/*'
           onChange={onInputFileChange}
         />
         <label
@@ -89,7 +94,7 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
             inputImageURL ? (
               'Replace image'
             ) : (
-              'Paste or upload an image'
+              'Select an image'
             )
           }
         </label>

@@ -2,8 +2,12 @@ import { SDFConverterOverflowMode } from './sdf-constants'
 import vertexShaderSource from './shaders/sdf-vertex-shader.glsl'
 import fragmentShaderSource from './shaders/sdf-fragment-shader.glsl'
 
-console.log(vertexShaderSource)
-console.log(fragmentShaderSource)
+enum SDFShaderUniform {
+  TEXTURE = 'uTexture',
+  RADIUS = 'uRadius',
+  THRESHOLD = 'uThreshold',
+  TEXEL_SIZE = 'uTexelSize',
+}
 
 const VERTICES = [
   -1, -1,
@@ -27,6 +31,7 @@ const INDICES = [
 export interface SDFGenerationOptions {
   radiusX: number,
   radiusY: number,
+  threshold: number,
   overflowMode: SDFConverterOverflowMode
 }
 
@@ -121,7 +126,7 @@ function setCorrectCanvasSize(
  */
 export async function generateSDF(
   inputTexture: HTMLImageElement,
-  { radiusX, radiusY, overflowMode }: SDFGenerationOptions
+  { radiusX, radiusY, threshold, overflowMode }: SDFGenerationOptions
 ): Promise<string> {
   const {
     width: srcWidth,
@@ -145,23 +150,17 @@ export async function generateSDF(
   // apply the shader
   await renderSDFToCanvas(
     inputTexture,
-    { radiusX, radiusY, overflowMode },
+    { radiusX, radiusY, threshold, overflowMode },
     canvas
   )
 
   // read from the canvas
-  const byteLength: number = dstWidth * dstHeight * 4
-  const dstBuffer = {
-    buffer: new Uint8ClampedArray(byteLength),
-    byteLength,
-    byteOffset: 0
-  }
   return canvas.toDataURL()
 }
 
 export async function renderSDFToCanvas(
   inputTexture: HTMLImageElement,
-  { radiusX, radiusY, overflowMode }: SDFGenerationOptions,
+  { radiusX, radiusY, threshold, overflowMode }: SDFGenerationOptions,
   canvas: HTMLCanvasElement
 ): Promise<void> {
   // ensure the canvas is the correct size
@@ -199,7 +198,7 @@ export async function renderSDFToCanvas(
   // join both shaders into a shader program
   const shaderProgram = createSDFShaderProgram(gl)
 
-  // create texture
+  // create texture and assign it to the shader
   const texture = gl.createTexture()
   if (!texture) {
     throw new Error('Unable to create texture')
@@ -215,9 +214,13 @@ export async function renderSDFToCanvas(
   }
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputTexture)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR_MIPMAP_LINEAR)
   gl.generateMipmap(gl.TEXTURE_2D)
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
 
-  // create buffers
+  // create geometry buffers and assign them
   const vertexBuffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(VERTICES), gl.STATIC_DRAW)
@@ -240,25 +243,25 @@ export async function renderSDFToCanvas(
   gl.enableVertexAttribArray(uvLocation)
   gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 0, 0)
 
-  // set up texture
-  gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, texture)
-  const textureLocation = gl.getUniformLocation(shaderProgram, "uTexture")
+  // set up texture uniform
+  const textureLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.TEXTURE)
   gl.uniform1i(textureLocation, 0)
 
-  // push SDF params
-  const radiusXlocation = gl.getUniformLocation(shaderProgram, "aRadiusX")
-  gl.uniform1f(radiusXlocation, radiusX)
-  const radiusYlocation = gl.getUniformLocation(shaderProgram, "aRadiusY")
-  gl.uniform1f(radiusYlocation, radiusY)
+  // push SDF uniforms
+  const radiusLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.RADIUS)
+  gl.uniform2f(radiusLocation, radiusX, radiusY)
+  const thresholdLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.THRESHOLD)
+  gl.uniform1f(thresholdLocation, threshold)
+
+  // push other uniforms
+  const texelWidth: number = 1 / canvas.width
+  const texelHeight: number = 1 / canvas.height
+  const texelSizeLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.TEXEL_SIZE)
+  gl.uniform2f(texelSizeLocation, texelWidth, texelHeight)
 
   // render
   gl.clearColor(0.6, 0.4, 0.5, 0.9)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
-
-  // unbind
-  //gl.bindBuffer(gl.ARRAY_BUFFER, null)
-  //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null)
 }
 

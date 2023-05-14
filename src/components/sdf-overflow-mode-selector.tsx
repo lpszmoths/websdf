@@ -74,7 +74,8 @@ export default function SDFOverflowModeSelector({ onChange }: SDFOverflowModeSel
                 }}
               ></input>
               <span>
-                Expand image as necessary
+                <s>Expand image as necessary</s>{' '}
+                (NOT IMPLEMENTED YET)
               </span>
             </label>
           </li>

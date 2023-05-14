@@ -22,7 +22,7 @@
   composes: box;
   --fg-color: var(--c0);
   --bg-color: var(--c3);
-  --fg-color-strong: var(--c0);
+  --fg-color-strong: var(--c00);
   --bg-color-strong: var(--c3);
   --border-color: var(--c1);
   --border-color-strong: var(--c0);
@@ -34,7 +34,7 @@
   composes: box;
   --fg-color: var(--c0);
   --bg-color: var(--c2);
-  --fg-color-strong: var(--c0);
+  --fg-color-strong: var(--c00);
   --bg-color-strong: var(--c3);
   --border-color: var(--c1);
   --border-color-strong: var(--c0);
@@ -46,7 +46,7 @@
   composes: box;
   --fg-color: var(--c3);
   --bg-color: var(--c1);
-  --fg-color-strong: var(--c3);
+  --fg-color-strong: var(--c4);
   --bg-color-strong: var(--c0);
   --border-color: var(--c2);
   --border-color-strong: var(--c3);

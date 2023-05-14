@@ -56,7 +56,8 @@ a:hover, a:active {
 }
 
 body,
-input {
+input,
+button {
   font-family: var(--normal-font-family);
 }
 
@@ -68,8 +69,19 @@ h4,
 h5,
 h6,
 input,
-button {
+button,
+small {
   font-size: 1rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+strong {
   font-weight: normal;
 }
 
@@ -82,6 +94,11 @@ h6,
 p,
 blockquote {
   margin: .5rem 0;
+}
+
+strong {
+  color: var(--fg-color-strong);
+  text-shadow: .0625rem .0625rem 0 var(--shadow-color);
 }
 
 button,
@@ -215,6 +232,12 @@ nav.site-nav::after {
 }
 
 nav.site-nav h1 {
+  color: var(--fg-color-strong);
+  /*text-shadow: -.0625rem -.0625rem 0 var(--border-color),
+               .0625rem .0625rem 0 var(--bg-color-strong);*/
+}
+
+nav.site-nav h1 > small {
   color: var(--fg-color);
   /*text-shadow: -.0625rem -.0625rem 0 var(--border-color),
                .0625rem .0625rem 0 var(--bg-color-strong);*/
@@ -251,6 +274,23 @@ main {
 
 .columns > * + * {
   margin-left: var(--spc-double);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.rows.centered {
+  align-items: center;
+}
+
+.rows > * {
+  flex: 0 0 auto;
+}
+
+.rows > * + * {
+  margin-top: var(--spc);
 }
 
 .align-center {
