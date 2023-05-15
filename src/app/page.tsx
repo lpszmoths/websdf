@@ -5,7 +5,7 @@ import * as React from 'react'
 import sdfConverterPageStyles from '../styles/sdf-converter-page.module.css'
 import boxStyles from '../styles/boxes.module.css'
 import imageStyles from '../styles/images.module.css'
-import { SDFConverterOverflowMode } from '@/sdf/sdf-constants'
+import { SDFChannelMode, SDFConverterOverflowMode, SDFPrecisionMode, SDFSignMode } from '@/sdf/sdf-constants'
 import { generateSDF } from '@/sdf/sdf-lib'
 import { APP_NAME } from '@/app-constants'
 import ImageUploader from '@/components/image-uploader'
@@ -14,6 +14,10 @@ import SDFRadiusInput from '@/components/sdf-radius-input'
 import Section from '@/components/section'
 import SDFThresholdInput from '@/components/sdf-threshold-input'
 import CopyBtn from '@/components/copy-btn'
+import DownloadBtn from '@/components/download-btn'
+import SDFChannelModeSelector from '@/components/sdf-channel-mode-selector'
+import SDFSignModeSelector from '@/components/sdf-sign-mode-selector'
+import SDFPrecisionModeSelector from '@/components/sdf-precision-selector'
 
 export interface SDFIfyPageProps { }
 
@@ -22,9 +26,12 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
   const [inputImageURL, setInputImageURL] = React.useState<string | null>()
   const [radiusX, setRadiusX] = React.useState<number>(64)
   const [radiusY, setRadiusY] = React.useState<number>(64)
-  const [threshold, setThreshold] = React.useState<number>(0.2)
+  const [threshold, setThreshold] = React.useState<number>(0.5)
   const [overflowMode, setOverflowMode] = React.useState<SDFConverterOverflowMode>(
     SDFConverterOverflowMode.CLIP
+  )
+  const [channelMode, setChannelMode] = React.useState<SDFChannelMode>(
+    SDFChannelMode.MONOCHROME
   )
   const [outputImageURL, setOutputImageURL] = React.useState<string>()
 
@@ -37,6 +44,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
           radiusY,
           threshold,
           overflowMode,
+          channelMode,
         }
       ).then((newOutputImageURL: string) => {
         setOutputImageURL(newOutputImageURL)
@@ -49,7 +57,8 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
     inputImageURL,
     radiusX,
     radiusY,
-    overflowMode
+    overflowMode,
+    channelMode
   ])
 
   return (
@@ -87,23 +96,35 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
               variant='primary'
               topLevel
             >
+              <SDFPrecisionModeSelector
+                initialPrecisionMode={SDFPrecisionMode.APPROXIMATE}
+                onChange={() => {}}
+              />
+              <SDFSignModeSelector
+                onChange={() => {}}
+              />
               <SDFThresholdInput
                 initialThreshold={threshold}
                 onChange={(newThreshold: number) => {
                   setThreshold(newThreshold)
                 }}
               />
-              <SDFRadiusInput
+              {/* <SDFRadiusInput
                 initialRadiusX={radiusX}
                 initialRadiusY={radiusY}
                 onChange={(newRadiusX: number, newRadiusY: number) => {
                   setRadiusX(newRadiusX)
                   setRadiusY(newRadiusY)
                 }}
-              />
+              /> */}
               <SDFOverflowModeSelector
                 onChange={(newOverflowMode: SDFConverterOverflowMode) => {
                   setOverflowMode(newOverflowMode)
+                }}
+              />
+              <SDFChannelModeSelector
+                onChange={(newChannelMode: SDFChannelMode) => {
+                  setChannelMode(newChannelMode)
                 }}
               />
             </Section>
@@ -113,9 +134,9 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
               variant='tertiary'
               topLevel
             >
-              <div className='align-right'>
+              {/* <div className='align-right'>
                 <CopyBtn value="test" />
-              </div>
+              </div> */}
               <div className={
                 [
                   'align-center',
@@ -125,13 +146,23 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
               }>
                 {
                   outputImageURL ? (
-                    <div className='card inline'>
-                      <img
-                        className={imageStyles.imagePreview}
-                        src={outputImageURL}
-                        alt="Output image"
-                      />
-                    </div>
+                    <>
+                      {/* <p><i className='caret-down'></i> Right click &gt; Save as <i className='caret-down'></i></p> */}
+                      <div className='align-right'>
+                        <DownloadBtn
+                          href={outputImageURL}
+                          destinationFilename="sdf.png"
+                        />
+                      </div>
+                      <div className='card inline'>
+                        <img
+                          className={imageStyles.imagePreview}
+                          src={outputImageURL}
+                          alt="Output image"
+                          tabIndex={1}
+                        />
+                      </div>
+                    </>
                   ) : (
                     <p>Input image required</p>
                   )

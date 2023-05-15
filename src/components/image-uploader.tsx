@@ -18,18 +18,7 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
     if (e.target.files && e.target.files.length >= 1) {
       const file: File = e.target.files![0]
       const url: string = URL.createObjectURL(file)
-      const img: HTMLImageElement = new Image()
-      img.addEventListener('load', () => {
-        setImageMetadata(
-          `${img.width}x${img.height}px`
-        )
-        onChange(img, url)
-      })
-      img.addEventListener('error', () => {
-        onChange(null, null)
-      })
-      img.src = url
-      setInputImageURL(url)
+      loadImage(url)
     }
     else {
       setInputImageURL('')
@@ -38,9 +27,27 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
     }
   }
 
+  const loadImage = (url: string) => {
+    const img: HTMLImageElement = new Image()
+    img.addEventListener('load', () => {
+      setImageMetadata(
+        `${img.width}x${img.height}px`
+      )
+      onChange(img, url)
+    })
+    img.addEventListener('error', () => {
+      onChange(null, null)
+    })
+    img.src = url
+    setInputImageURL(url)
+  }
+
+  const loadTestImage = () => {
+    loadImage('./test-images/testcat.png')
+  }
+
   return (
     <>
-      <p>Provide an image to convert to a <a href={SDF_EXTERNAL_LINK} target='_blank'>signed distance field</a>. For best results, use a high resolution image made of solid, black-and-white shapes.</p>
       {/* <p><strong>Note:</strong> This tool runs in your browser. The image will not be uploaded anywhere.</p> */}
       {
         inputImageURL ? (
@@ -79,15 +86,8 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
         ) : null
       }
       <div>
-        <input
-          type="file"
-          id="input-image-upload"
-          style={{ 'display': 'none' }}
-          accept='image/*'
-          onChange={onInputFileChange}
-        />
         <label
-          className="button large"
+          className="button upload-button large"
           htmlFor="input-image-upload"
         >
           {
@@ -97,7 +97,19 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
               'Select an image'
             )
           }
+          <input
+            type="file"
+            id="input-image-upload"
+            className='upload-input'
+            accept='image/*'
+            onChange={onInputFileChange}
+          />
         </label>
+        <span>or</span>
+        <button
+          type='button'
+          onClick={loadTestImage}
+        >load test image</button>
       </div>
     </>
   )

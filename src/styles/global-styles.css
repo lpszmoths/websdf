@@ -1,6 +1,8 @@
+@import url(./icons.css);
+
 @font-face {
   font-family: "ChiKareGo2";
-  src: url(/fonts/ChiKareGo2.ttf);
+  src: url('../fonts/ChiKareGo2.ttf') format('truetype');
 }
 
 :root {
@@ -158,6 +160,24 @@ button.large::after,
   border-radius: var(--spc-double);
 }
 
+button.upload-button,
+.button.upload-button {
+  position: relative;
+}
+
+button.upload-button .upload-input,
+.button.upload-button .upload-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%; 
+  overflow: hidden;
+  text-indent: -100vmax;
+}
+
 input[type=text],
 input[type=number] {
   border-radius: .125rem;
@@ -185,6 +205,10 @@ ul.no-bullets > li {
 ul.no-bullets {
   padding: 0;
   margin: 0;
+}
+
+ul.no-bullets.compact > li {
+  display: inline-block;
 }
 
 * + ul {
@@ -265,6 +289,10 @@ main {
 
 .columns.centered {
   align-items: center;
+}
+
+.columns.align-right {
+  justify-content: flex-end;
 }
 
 .columns > * {

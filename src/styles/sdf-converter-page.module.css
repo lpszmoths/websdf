@@ -1,6 +1,6 @@
 .outputContainer {
-  width: calc(50vmax - 4rem);
-  height: calc(50vmax - 4rem);
+  min-width: calc(50vmax - 4rem);
+  min-height: calc(50vmax - 4rem);
 }
 
 @media screen and (min-width: 600px) and (orientation: landscape) {

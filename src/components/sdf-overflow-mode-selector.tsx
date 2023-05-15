@@ -72,6 +72,7 @@ export default function SDFOverflowModeSelector({ onChange }: SDFOverflowModeSel
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   setOverflowMode(e.target.value as SDFConverterOverflowMode)
                 }}
+                disabled
               ></input>
               <span>
                 <s>Expand image as necessary</s>{' '}

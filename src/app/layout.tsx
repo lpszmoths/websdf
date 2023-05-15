@@ -1,4 +1,4 @@
-import '../styles/global-styles.css'
+import '../styles/global-styles.css' 
 
 export const metadata = {
   title: 'Next.js',
@@ -12,7 +12,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body data-debug="bbb">{children}</body>
+      <body>
+        {children}
+      </body>
     </html>
   )
 }

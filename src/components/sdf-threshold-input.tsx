@@ -32,12 +32,11 @@ export default function SDFThresholdInput({
               value={threshold}
               min={0.0}
               max={1.0}
-              step={1.0/128.0}
+              step={1.0/20.0}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setThreshold(parseInt(e.target.value))
+                setThreshold(parseFloat(e.target.value))
               }}
             ></input>
-            Horizontal
           </label>
         </li>
       </ul>

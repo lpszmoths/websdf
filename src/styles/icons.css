@@ -1,0 +1,18 @@
+i,
+.icon {
+  display: inline-block;
+  content: ' ';
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+i.caret-down,
+.icon.caret-down {
+  width: 0;
+  height: 0;
+  border: solid 0.25em transparent;
+  border-top-color: var(--fg-color);
+  border-bottom-width: 0;
+}
