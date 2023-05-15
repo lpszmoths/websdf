@@ -49,12 +49,16 @@ body {
   padding: 0;
 }
 
-a, a:link {
+a, a:link, a:visited {
   text-decoration: none;
+  color: var(--fg-color);
+  border-bottom: dashed .0625rem var(--fg-color);
 }
 
 a:hover, a:active {
-  text-decoration: underline;
+  text-decoration: none;
+  color: var(--fg-color-strong);
+  border-bottom: solid .0625rem var(--fg-color);
 }
 
 body,

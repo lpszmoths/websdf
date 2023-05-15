@@ -4,8 +4,6 @@ import * as React from 'react'
 
 import imageStyles from '../styles/images.module.css'
 
-const SDF_EXTERNAL_LINK = 'https://en.wikipedia.org/wiki/Signed_distance_function'
-
 export interface ImageUploaderProps {
   onChange: (image: HTMLImageElement | null, imageURL: string | null) => void
 }

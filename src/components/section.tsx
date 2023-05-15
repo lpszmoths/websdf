@@ -14,11 +14,12 @@ import SDFRadiusInput from '@/components/sdf-radius-input'
 
 export interface SectionProps extends React.PropsWithChildren {
   id?: string
-  title?: string
+  title?: React.ReactNode
   className?: string
   classNames?: string[]
   variant?: 'primary' | 'secondary' | 'tertiary'
   topLevel?: boolean
+  subSections?: React.ReactNode[]
 }
 
 export default function Section({
@@ -29,6 +30,7 @@ export default function Section({
   variant,
   topLevel,
   children,
+  subSections,
 }: SectionProps) {
   const optionalProps: any = {}
   if (id) {
@@ -79,9 +81,22 @@ export default function Section({
             <h2 className={boxStyles.boxTitle}>{title}</h2>
           ) : null
         }
-        <div className={boxStyles.boxSection}>
-          {children}
-        </div>
+        {
+          subSections ? (
+            subSections.map((ss: React.ReactNode, i: number) => (
+              <div
+                className={boxStyles.boxSection}
+                key={i}
+              >
+                {ss}
+              </div>
+            ))
+          ) : (
+            <div className={boxStyles.boxSection}>
+              {children}
+            </div>
+          )
+        }
       </section>
     </>
   )

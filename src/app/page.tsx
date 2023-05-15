@@ -5,7 +5,7 @@ import * as React from 'react'
 import sdfConverterPageStyles from '../styles/sdf-converter-page.module.css'
 import boxStyles from '../styles/boxes.module.css'
 import imageStyles from '../styles/images.module.css'
-import { SDFChannelMode, SDFConverterOverflowMode, SDFPrecisionMode, SDFSignMode } from '@/sdf/sdf-constants'
+import { SDFChannelMode, SDFConverterOverflowMode, SDFPrecisionMode, SDFSignMode, SDF_EXTERNAL_LINK } from '@/sdf/sdf-constants'
 import { generateSDF } from '@/sdf/sdf-lib'
 import { APP_NAME } from '@/app-constants'
 import ImageUploader from '@/components/image-uploader'
@@ -77,18 +77,27 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
               title='Input image'
               variant='secondary'
               topLevel
-            >
-              <ImageUploader
-                onChange={
-                  (
-                    newImage: HTMLImageElement | null,
-                    newImageURL: string | null
-                  ) => {
-                    setInputImage(newImage)
-                    setInputImageURL(newImageURL)
+              subSections={[
+                <ImageUploader
+                  onChange={
+                    (
+                      newImage: HTMLImageElement | null,
+                      newImageURL: string | null
+                    ) => {
+                      setInputImage(newImage)
+                      setInputImageURL(newImageURL)
+                    }
                   }
-                }
-              />
+                />,
+                <>
+                  <p>For best results, your image should be:</p>
+                  <ul>
+                    <li>High resolution</li>
+                    <li>Black and white lineart</li>
+                  </ul>
+                </>
+              ]}
+            >
             </Section>
             <Section
               id="parameters-section"
@@ -130,7 +139,15 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
             </Section>
             <Section
               id="output-section"
-              title='Result'
+              title={<>
+                Distance field texture
+                (
+                  <a
+                    href={SDF_EXTERNAL_LINK}
+                    target='_blank'
+                  >What's a distance field?</a>
+                )
+              </>}
               variant='tertiary'
               topLevel
             >

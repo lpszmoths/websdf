@@ -23,3 +23,5 @@ export enum SDFPrecisionMode {
   APPROXIMATE = 'approximate',
   EXACT = 'exact',
 }
+
+export const SDF_EXTERNAL_LINK = 'https://en.wikipedia.org/wiki/Signed_distance_function'
