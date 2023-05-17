@@ -283,6 +283,7 @@ ul.no-bullets.compact > li {
   right: 0;
   height: calc(var(--spc-double) * 2.125);
   box-shadow: 0 .25rem 0 var(--c00);
+  z-index: 1;
 }
 
 nav.site-nav {
