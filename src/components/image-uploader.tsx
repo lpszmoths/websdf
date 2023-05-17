@@ -98,7 +98,7 @@ export default function ImageUploader({ onChange }: ImageUploaderProps) {
           <input
             type="file"
             id="input-image-upload"
-            className='upload-input'
+            className='upload-input hidden-input'
             accept='image/*'
             onChange={onInputFileChange}
           />

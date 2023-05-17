@@ -1,4 +1,4 @@
-import { SDFChannelMode, SDFConverterOverflowMode } from './sdf-constants'
+import { SDFChannelMode, SDFConverterOverflowMode, SDFPrecisionMode } from './sdf-constants'
 import vertexShaderSource from './shaders/sdf-vertex-shader.glsl'
 import fragmentShaderSource from './shaders/sdf-fragment-shader.glsl'
 
@@ -7,6 +7,7 @@ enum SDFShaderUniform {
   RADIUS = 'uRadius',
   THRESHOLD = 'uThreshold',
   TEXEL_SIZE = 'uTexelSize',
+  HIGH_PRECISION = 'uHighPrecision',
   ENABLE_RGB = 'uEnableRGB',
 }
 
@@ -30,10 +31,12 @@ const INDICES = [
  * TODO docs
  */
 export interface SDFGenerationOptions {
-  radiusX: number,
-  radiusY: number,
-  threshold: number,
+  radiusX: number
+  radiusY: number
+  threshold: number
   overflowMode: SDFConverterOverflowMode
+  precisionMode: SDFPrecisionMode
+  numSamples: number
   channelMode: SDFChannelMode
 }
 
@@ -130,7 +133,15 @@ function setCorrectCanvasSize(
  */
 export async function generateSDF(
   inputTexture: HTMLImageElement,
-  { radiusX, radiusY, threshold, overflowMode, channelMode }: SDFGenerationOptions
+  {
+    radiusX,
+    radiusY,
+    threshold,
+    overflowMode,
+    precisionMode,
+    numSamples,
+    channelMode
+  }: SDFGenerationOptions
 ): Promise<string> {
   const {
     width: srcWidth,
@@ -154,7 +165,15 @@ export async function generateSDF(
   // apply the shader
   await renderSDFToCanvas(
     inputTexture,
-    { radiusX, radiusY, threshold, overflowMode, channelMode },
+    {
+      radiusX,
+      radiusY,
+      threshold,
+      overflowMode,
+      precisionMode,
+      numSamples,
+      channelMode
+    },
     canvas
   )
 
@@ -164,7 +183,14 @@ export async function generateSDF(
 
 export async function renderSDFToCanvas(
   inputTexture: HTMLImageElement,
-  { radiusX, radiusY, threshold, overflowMode, channelMode }: SDFGenerationOptions,
+  {
+    radiusX,
+    radiusY,
+    threshold,
+    overflowMode,
+    precisionMode,
+    channelMode
+  }: SDFGenerationOptions,
   canvas: HTMLCanvasElement
 ): Promise<void> {
   // ensure the canvas is the correct size
@@ -256,6 +282,8 @@ export async function renderSDFToCanvas(
   gl.uniform2f(radiusLocation, radiusX, radiusY)
   const thresholdLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.THRESHOLD)
   gl.uniform1f(thresholdLocation, threshold)
+  const highPrecisionLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.HIGH_PRECISION)
+  gl.uniform1i(highPrecisionLocation, precisionMode === SDFPrecisionMode.EXACT ? 1 : 0)
   const enableRGBLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.ENABLE_RGB)
   gl.uniform1i(enableRGBLocation, channelMode === SDFChannelMode.RGB ? 1 : 0)
 

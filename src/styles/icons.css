@@ -1,5 +1,6 @@
 i,
 .icon {
+  position: relative;
   display: inline-block;
   content: ' ';
   width: 1em;
@@ -15,4 +16,20 @@ i.caret-down,
   border: solid 0.25em transparent;
   border-top-color: var(--fg-color);
   border-bottom-width: 0;
+}
+
+i.hamburger:before,
+i.hamburger:after,
+.icon.hamburger:before,
+.icon.hamburger::after {
+  display: block;
+  content: ' ';
+  border-top: solid .125em var(--fg-color);
+}
+
+i.hamburger:before,
+.icon.hamburger:before {
+  height: .25em;
+  border-bottom: solid .125em var(--fg-color);
+  margin-bottom: .25em;
 }

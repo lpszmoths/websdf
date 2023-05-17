@@ -46,23 +46,8 @@ export default function Section({
   }
   
   variant = variant || 'primary'
-  switch(variant) {
-    case 'primary':
-      classNamesActual.push(
-        boxStyles.boxPrimary
-      )
-      break
-    case 'secondary':
-      classNamesActual.push(
-        boxStyles.boxSecondary
-      )
-      break
-    case 'tertiary':
-      classNamesActual.push(
-        boxStyles.boxTertiary
-      )
-      break
-  }
+  classNamesActual.push(`colors-${variant}`)
+  classNamesActual.push(boxStyles.box)
 
   if (topLevel) {
     classNamesActual.push(

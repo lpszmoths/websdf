@@ -28,12 +28,23 @@ const float KERNEL[25] = float[](
 );
 const float KERNEL_SUM = 273.0;
 
+const float HOLLOW_KERNEL[25] = float[](
+  1.0,  4.0, 25.0,  4.0, 1.0,
+  4.0, 16.0, 0.0, 16.0, 4.0,
+  25.0, 0.0,  0.0,  0.0, 25.0,
+  4.0, 16.0, 0.0, 16.0, 4.0,
+  1.0,  4.0,  25.0,  4.0, 1.0 
+);
+const float HOLLOW_KERNEL_SUM = 273.0;
+
 const float INFINITE_DISTANCE = 65536.0;
 
 uniform sampler2D uTexture;
 uniform vec2 uRadius;
 uniform vec2 uTexelSize;
 uniform float uThreshold;
+uniform int uNumSamples;
+uniform int uHighPrecision;
 uniform int uEnableRGB;
 in vec2 vTexCoord;
 out vec4 outColor;
@@ -137,26 +148,27 @@ vec3 findApproximateUnsignedDistance() {
   return dist;
 }
 
+/* Returns 1 if outside the shape, -1 if inside */
+int getSdfSign(float value) {
+  if (value > uThreshold) {
+    return 1;
+  }
+  else {
+    return -1;
+  }
+}
+
 vec3 findSignedDistance() {
-  /* query the current texel at max preision*/
+  /* query the current texel at max preision */
   float currentValue = sampleLod(vTexCoord, 0.0);
 
   /* are we inside or outside? */
-  float sdfSign = 1.0; /* outside */
-  if (currentValue <= uThreshold) {
-    sdfSign = -1.0; /* inside */
-
-    /* TODO implement inner distance */
-    return vec3(
-      0.0,
-      0.0,
-      1.0
-    );
-  }
+  int currentSdfSign = getSdfSign(currentValue);
   
-  /* go up in lods until we find a distance */
-  vec3 dist = vec3(INFINITE_DISTANCE, INFINITE_DISTANCE, INFINITE_DISTANCE);
-  for (float lod = 0.0; lod <= 8.0; lod += 1.0) {
+  /* increase radius until the sign changes */
+  float minDistFound = INFINITE_DISTANCE;
+  vec2 minDirectionFound = vec2(0.0, 0.0);
+  for (float radius = 1.0; radius <= uRadius; lod += 1.0) {
     dist = findApproximateUnsignedDistanceAtLod(
       currentValue,
       sdfSign,
@@ -179,7 +191,12 @@ vec3 findSignedDistance() {
 
 void main()
 {
-  vec3 sdfValue = findApproximateUnsignedDistance();
+  vec3 sdfValue;
+  if (highPrecision == 1) {
+    findUnsignedDistance();
+  } else {
+    findApproximateUnsignedDistance();
+  }
 
   if (uEnableRGB != 1) {
     sdfValue = vec3(sdfValue.z, sdfValue.z, sdfValue.z);

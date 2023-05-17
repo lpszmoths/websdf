@@ -20,10 +20,8 @@ export default function SDFPrecisionModeSelector({
 
   const options = {
     [SDFPrecisionMode.APPROXIMATE]: 'Approximate',
-    [SDFPrecisionMode.EXACT]: <><s>Exact</s> (NOT IMPLEMENTED)</>,
+    [SDFPrecisionMode.EXACT]: 'Exact',
   }
-
-  const isDisabled = (option: string) => option === SDFPrecisionMode.EXACT
 
   React.useEffect(() => {
     onChange(precisionMode)
@@ -42,7 +40,6 @@ export default function SDFPrecisionModeSelector({
           onChange={(newOption: string) => {
             setPrecisionMode(newOption as SDFPrecisionMode)
           }}
-          isDisabled={isDisabled}
           compact
         />
       </fieldset>
