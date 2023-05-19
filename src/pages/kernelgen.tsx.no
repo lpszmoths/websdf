@@ -15,80 +15,19 @@ import SDFChannelModeSelector from '@/components/sdf-channel-mode-selector'
 import SDFSignModeSelector from '@/components/sdf-sign-mode-selector'
 import SDFPrecisionModeSelector from '@/components/sdf-precision-selector'
 import SiteNav, { PAGES } from '@/components/site-nav'
-import SDFRadiusInput from '@/components/sdf-radius-input'
+import { KernelVector2 } from '@/kernel/kernel-utils'
 
-export interface SDFIfyPageProps { }
+export default function KernelGenPage({ }: React.PropsWithChildren) {
+  const [kernelSize, setKernelSize] = React.useState<KernelVector2>([5, 5])
+  const [samplesPerQuadrant, setSamplesPerQuadrant] = React.useState<KernelVector2>([32, 32])
+  const [samplesPerQuadrant, setSamplesPerQuadrant] = React.useState<KernelVector2>([32, 32])
 
-interface SDFOutputSectionContentProps {
-  isGenerating: boolean
-  outputImageURL?: string
-}
+  function generateKernel() {
 
-function SDFOutputSectionContent({
-  isGenerating,
-  outputImageURL,
-}: SDFOutputSectionContentProps) {
-  let content: React.ReactNode = null
-  if (isGenerating) {
-    content = <p>Generating...</p>
   }
-  else if (!outputImageURL) {
-    content = <p>Input image required</p>
-  }
-  else {
-    content = (
-      <>
-        {/* <p><i className='caret-down'></i> Right click &gt; Save as <i className='caret-down'></i></p> */}
-        <div className='align-right'>
-          <DownloadBtn
-            href={outputImageURL}
-            destinationFilename="sdf.png"
-          />
-        </div>
-        <div className='card inline'>
-          <img
-            className={imageStyles.imagePreview}
-            src={outputImageURL}
-            alt="Output image"
-            tabIndex={1}
-          />
-        </div>
-      </>
-    )
-  }
-  return (
-    <div className={
-      [
-        'align-center',
-        sdfConverterPageStyles.imagePreviewContainer,
-        sdfConverterPageStyles.outputContainer
-      ].join(' ')
-    }>
-      {content}
-    </div>
-  )
-}
-
-export default function SDFIfyPage({ }: SDFIfyPageProps) {
-  const [isGenerating, setIsGenerating] = React.useState<boolean>(false)
-  const [inputImage, setInputImage] = React.useState<HTMLImageElement | null>(null)
-  const [inputImageURL, setInputImageURL] = React.useState<string | null>(null)
-  const [radiusX, setRadiusX] = React.useState<number>(64)
-  const [radiusY, setRadiusY] = React.useState<number>(64)
-  const [precisionMode, setPrecisionMode] = React.useState<SDFPrecisionMode>(SDFPrecisionMode.APPROXIMATE)
-  const [numSamples, setNumSamples] = React.useState<number>(8)
-  const [threshold, setThreshold] = React.useState<number>(0.5)
-  const [overflowMode, setOverflowMode] = React.useState<SDFConverterOverflowMode>(
-    SDFConverterOverflowMode.CLIP
-  )
-  const [channelMode, setChannelMode] = React.useState<SDFChannelMode>(
-    SDFChannelMode.MONOCHROME
-  )
-  const [outputImageURL, setOutputImageURL] = React.useState<string>()
 
   React.useEffect(() => {
     if (inputImage) {
-      setIsGenerating(true)
       generateSDF(
         inputImage,
         {
@@ -102,20 +41,16 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
         }
       ).then((newOutputImageURL: string) => {
         setOutputImageURL(newOutputImageURL)
-        setIsGenerating(false)
       })
     }
     else {
       setOutputImageURL('')
-      setIsGenerating(false)
     }
   }, [
     inputImageURL,
     radiusX,
     radiusY,
     overflowMode,
-    precisionMode,
-    numSamples,
     channelMode
   ])
 
@@ -173,14 +108,14 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
                   setThreshold(newThreshold)
                 }}
               />
-              <SDFRadiusInput
+              {/* <SDFRadiusInput
                 initialRadiusX={radiusX}
                 initialRadiusY={radiusY}
                 onChange={(newRadiusX: number, newRadiusY: number) => {
                   setRadiusX(newRadiusX)
                   setRadiusY(newRadiusY)
                 }}
-              />
+              /> */}
               <SDFOverflowModeSelector
                 onChange={(newOverflowMode: SDFConverterOverflowMode) => {
                   setOverflowMode(newOverflowMode)
@@ -206,10 +141,40 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
               variant='tertiary'
               topLevel
             >
-              <SDFOutputSectionContent
-                isGenerating={isGenerating}
-                outputImageURL={outputImageURL}
-              />
+              {/* <div className='align-right'>
+                <CopyBtn value="test" />
+              </div> */}
+              <div className={
+                [
+                  'align-center',
+                  sdfConverterPageStyles.imagePreviewContainer,
+                  sdfConverterPageStyles.outputContainer
+                ].join(' ')
+              }>
+                {
+                  outputImageURL ? (
+                    <>
+                      {/* <p><i className='caret-down'></i> Right click &gt; Save as <i className='caret-down'></i></p> */}
+                      <div className='align-right'>
+                        <DownloadBtn
+                          href={outputImageURL}
+                          destinationFilename="sdf.png"
+                        />
+                      </div>
+                      <div className='card inline'>
+                        <img
+                          className={imageStyles.imagePreview}
+                          src={outputImageURL}
+                          alt="Output image"
+                          tabIndex={1}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p>Input image required</p>
+                  )
+                }
+              </div>
             </Section>
           </div>
         </form>

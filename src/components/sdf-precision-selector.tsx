@@ -36,7 +36,7 @@ export default function SDFPrecisionModeSelector({
         <RadioSelector
           name='precision-mode'
           options={options}
-          initialOption={SDFPrecisionMode.APPROXIMATE}
+          initialOption={precisionMode}
           onChange={(newOption: string) => {
             setPrecisionMode(newOption as SDFPrecisionMode)
           }}

@@ -19,24 +19,6 @@ const float DISTANCE_MULTIPLIERS[NUM_OFFSETS] = float[](
   1.0,        SQRT_2_INV, 1.0
 );
 
-const float KERNEL[25] = float[](
-  1.0,  4.0,  7.0,  4.0, 1.0,
-  4.0, 16.0, 26.0, 16.0, 4.0,
-  7.0, 26.0, 41.0, 26.0, 7.0,
-  4.0, 16.0, 26.0, 16.0, 4.0,
-  1.0,  4.0,  7.0,  4.0, 1.0 
-);
-const float KERNEL_SUM = 273.0;
-
-const float HOLLOW_KERNEL[25] = float[](
-  1.0,  4.0, 25.0,  4.0, 1.0,
-  4.0, 16.0, 0.0, 16.0, 4.0,
-  25.0, 0.0,  0.0,  0.0, 25.0,
-  4.0, 16.0, 0.0, 16.0, 4.0,
-  1.0,  4.0,  25.0,  4.0, 1.0 
-);
-const float HOLLOW_KERNEL_SUM = 273.0;
-
 const float INFINITE_DISTANCE = 65536.0;
 
 uniform sampler2D uTexture;
@@ -148,13 +130,37 @@ vec3 findApproximateUnsignedDistance() {
   return dist;
 }
 
-/* Returns 1 if outside the shape, -1 if inside */
-int getSdfSign(float value) {
+/* Returns 1 if outside the shape, 0 if inside */
+float getSdfSign(float value) {
   if (value > uThreshold) {
-    return 1;
+    return 1.0;
   }
   else {
-    return -1;
+    return 0.0;
+  }
+}
+
+void evaluateSignedOrientedDistance(
+  inout vec3 currentSignedOrientedDistance,
+  float currentSdfSign,
+  vec2 uvOffset
+) {
+  float dist = length(uvOffset);
+  vec3 newSignedOrientedDistance = vec3(
+    uvOffset.x,
+    uvOffset.y,
+    dist
+  );
+  vec2 uv = vTexCoord + uvOffset;
+  float value = sampleLod(uv, 0.0);
+  float sign = getSdfSign(value);
+  float signDiff = currentSdfSign - sign;
+
+  if (newSignedOrientedDistance.z < currentSignedOrientedDistance.z) {
+    currentSignedOrientedDistance = (
+      (1.0 - signDiff) * currentSignedOrientedDistance +
+      signDiff * newSignedOrientedDistance
+    );
   }
 }
 
@@ -163,39 +169,74 @@ vec3 findSignedDistance() {
   float currentValue = sampleLod(vTexCoord, 0.0);
 
   /* are we inside or outside? */
-  int currentSdfSign = getSdfSign(currentValue);
+  float currentSdfSign = getSdfSign(currentValue);
   
   /* increase radius until the sign changes */
-  float minDistFound = INFINITE_DISTANCE;
-  vec2 minDirectionFound = vec2(0.0, 0.0);
-  for (float radius = 1.0; radius <= uRadius; lod += 1.0) {
-    dist = findApproximateUnsignedDistanceAtLod(
-      currentValue,
-      sdfSign,
-      lod
-    );
-    if (dist.z < INFINITE_DISTANCE) {
-      dist.z = pow(2.0, lod);
+  vec3 bestSignedOrientedDistance = vec3(
+    0.0,
+    0.0,
+    INFINITE_DISTANCE
+  );
+  vec2 uvRadius = uRadius * uTexelSize;
+  vec2 increment = uTexelSize * 2.0;
+
+  /* iterate from the center outwards */
+  for (
+    vec2 radius = increment;
+    radius.x < uRadius.x;
+    radius += increment
+  ) {
+    
+    /* iterate through the top and bottom edge */
+    for (
+      float i = -radius.x;
+      i <= radius.x;
+      i += increment.x
+    ) {
+      vec2 uvOffset = vec2(i, 0.0);
+      evaluateSignedOrientedDistance(
+        bestSignedOrientedDistance,
+        currentSdfSign,
+        uvOffset
+      );
+    }
+
+    /* iterate through the left and right edges */
+    for (
+      float j = increment.y - radius.y;
+      j <= radius.y - increment.y;
+      j += increment.y
+    ) {
+      vec2 uvOffset = vec2(0.0, j);
+      evaluateSignedOrientedDistance(
+        bestSignedOrientedDistance,
+        currentSdfSign,
+        uvOffset
+      );
+    }
+
+    /* stop as soon as distance is non-infinite */
+    if (bestSignedOrientedDistance.z < INFINITE_DISTANCE) {
       break;
     }
   }
 
-  dist.x = mapSignedToUnsigned(dist.x);
-  dist.y = mapSignedToUnsigned(dist.y);
-  //dist.x = mapDistanceToProximity(dist.x, pow(2.0, 8.0));
-  //dist.y = mapDistanceToProximity(dist.y, pow(2.0, 8.0));
-  dist.z = mapDistanceToProximity(dist.z, pow(2.0, 8.0));
+  bestSignedOrientedDistance.x = mapSignedToUnsigned(bestSignedOrientedDistance.x);
+  bestSignedOrientedDistance.y = mapSignedToUnsigned(bestSignedOrientedDistance.y);
+  //bestSignedOrientedDistance.x = mapDistanceToProximity(bestSignedOrientedDistance.x, uRadius.x * 2.0);
+  //bestSignedOrientedDistance.y = mapDistanceToProximity(bestSignedOrientedDistance.y, uRadius.y * 2.0);
+  bestSignedOrientedDistance.z = mapDistanceToProximity(bestSignedOrientedDistance.z, length(uRadius) * 2.0);
 
-  return dist;
+  return bestSignedOrientedDistance;
 }
 
 void main()
 {
   vec3 sdfValue;
-  if (highPrecision == 1) {
-    findUnsignedDistance();
+  if (uHighPrecision == 1) {
+    sdfValue = findSignedDistance();
   } else {
-    findApproximateUnsignedDistance();
+    sdfValue = findApproximateUnsignedDistance();
   }
 
   if (uEnableRGB != 1) {
