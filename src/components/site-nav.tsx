@@ -1,6 +1,6 @@
 'use client'
 
-import { APP_NAME } from '@/app-constants'
+import { APP_NAME, APP_VERSION } from '@/app-constants'
 import Link from 'next/link'
 import * as React from 'react'
 
@@ -31,7 +31,7 @@ export default function SiteNav({ current }: SiteNavProps) {
             <li>
               <h1>
                 {APP_NAME}
-                <small>v0.1</small>
+                <small>v{APP_VERSION}</small>
               </h1>
             </li>
             <li className='spacer'></li>

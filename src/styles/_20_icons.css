@@ -1,0 +1,67 @@
+i,
+.icon {
+  position: relative;
+  display: inline-block;
+  content: ' ';
+  width: 1em;
+  height: 1em;
+  margin-right: .5em;
+  line-height: 1;
+  vertical-align: middle;
+  color: var(--fg-color);
+  fill: var(--fg-color);
+  stroke: var(--fg-color);
+
+  background-color: var(--fg-color);
+  mask-size: contain;
+}
+
+i.caret-down,
+.icon.caret-down {
+  width: 0;
+  height: 0;
+  border: solid 0.25em transparent;
+  border-top-color: var(--fg-color);
+  border-bottom-width: 0;
+}
+
+i.hamburger2:before,
+i.hamburger2:after,
+.icon.hamburger2:before,
+.icon.hamburger2::after {
+  display: block;
+  content: ' ';
+  border-top: solid .125em var(--fg-color);
+}
+
+i.hamburger2:before,
+.icon.hamburger2:before {
+  height: .25em;
+  border-bottom: solid .125em var(--fg-color);
+  margin-bottom: .25em;
+}
+
+i.cupcake,
+.icon.cupcake {
+  mask-image: url('../../public/icons/icon-cupcake.svg');
+}
+
+i.file,
+.icon.file {
+  mask-image: url('../../public/icons/icon-img-upload.svg');
+}
+
+i.hamburger,
+.icon.hamburger {
+  mask-image: url('../../public/icons/icon-hamburger.svg');
+}
+
+i.parameters,
+.icon.parameters {
+  mask-image: url('../../public/icons/icon-parameters.svg');
+}
+
+i.settings,
+.icon.settings {
+  mask-image: url('../../public/icons/icon-settings.svg');
+}

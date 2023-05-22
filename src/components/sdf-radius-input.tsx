@@ -5,7 +5,10 @@ import * as React from 'react'
 export interface SDFRadiusInputProps {
   initialRadiusX: number
   initialRadiusY: number
-  onChange: (newRadiusX: number, newRadiusY: number) => void
+  onChange: (
+    newRadiusX: number,
+    newRadiusY: number,
+  ) => void
 }
 
 export default function SDFRadiusInput({
@@ -20,7 +23,7 @@ export default function SDFRadiusInput({
     onChange(radiusX, radiusY)
   }, [
     radiusX,
-    radiusY
+    radiusY,
   ])
 
   return (

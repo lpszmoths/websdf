@@ -2,39 +2,33 @@
 
 import * as React from 'react'
 
-import { SDFChannelMode } from '@/sdf/sdf-constants'
+import { SDFChannelMode } from '@/sdf/sdf-types'
 import RadioSelector from './radio-selector'
 
 export interface SDFChannelModeSelectorProps {
+  channelMode: SDFChannelMode
   onChange: (newChannelMode: SDFChannelMode) => void
 }
 
-export default function SDFChannelModeSelector({ onChange }: SDFChannelModeSelectorProps) {
-  const [channelMode, setChannelMode] = React.useState<SDFChannelMode>(
-    SDFChannelMode.MONOCHROME
-  )
+const CHANNEL_MODE_OPTIONS = {
+  [SDFChannelMode.MONOCHROME]: 'Monochrome',
+  [SDFChannelMode.RGB]: 'RGB (RG = direction, B = distance)',
+}
 
-  const options = {
-    [SDFChannelMode.MONOCHROME]: 'Monochrome',
-    [SDFChannelMode.RGB]: 'RGB (RG = direction, B = distance)',
-  }
-
-  React.useEffect(() => {
-    onChange(channelMode)
-  }, [
-    channelMode
-  ])
-
+export default function SDFChannelModeSelector({
+  channelMode,
+  onChange,
+}: SDFChannelModeSelectorProps) {
   return (
     <>
       <fieldset>
         <h3>Channels</h3>
         <RadioSelector
           name='channel-mode'
-          options={options}
+          options={CHANNEL_MODE_OPTIONS}
           initialOption={SDFChannelMode.MONOCHROME}
           onChange={(newOption: string) => {
-            setChannelMode(newOption as SDFChannelMode)
+            onChange(newOption as SDFChannelMode)
           }}
           compact
         />

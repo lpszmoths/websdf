@@ -1,0 +1,103 @@
+button > .hidden-input,
+.button > .hidden-input {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hidden-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  text-indent: -100vmax;
+  pointer-events: none;
+}
+
+input[type=text],
+input[type=number] {
+  border-radius: .25rem;
+  border: solid .125rem var(--fg-color);
+  background-color: var(--bg-color-strong);
+  margin: 0;
+  padding: var(--spc-half) var(--spc);
+  padding-right: .125rem;
+}
+
+.select-container {
+  position: relative;
+}
+
+.select-container > select {
+  appearance: none;
+  padding: 0 1em 0 0;
+  margin: 0;
+  width: 100%;
+  cursor: inherit;
+  line-height: inherit;
+  outline: none;
+  border-radius: 0.25rem;
+  border: solid .125rem var(--fg-color);
+  background-color: var(--bg-color-strong);
+  padding: var(--spc-half) var(--spc);
+}
+
+.select-container > select:disabled {
+  background-color: var(--bg-color);
+}
+
+.select-container::after,
+.select-container::before {
+  position: absolute;
+  content: ' ';
+  right: calc(var(--spc) * 1.5);
+  width: 0.625rem;
+  height: 0.3125rem;
+  background-color: var(--fg-color);
+}
+
+.select-container::after {
+  top: calc(50% + 0.0625rem);
+  clip-path: polygon(
+    0% 0%,
+    50% 100%,
+    100% 0%
+  );
+}
+
+.select-container::before {
+  bottom: calc(50% + 0.0625rem);
+  clip-path: polygon(
+    0% 100%,
+    50% 0%,
+    100% 100%
+  );
+}
+
+.select-container > select + .focus {
+  display: none;
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  pointer-events: none;
+  border: solid 2px blue;
+  border-radius: inherit;
+}
+
+.select-container > select:focus + .focus {
+  display: block;
+}
+
+.toggle-content {
+  display: none;
+}
+
+input[type=checkbox].toggle-checkbox:checked ~ .toggle-content {
+  display: block;
+}

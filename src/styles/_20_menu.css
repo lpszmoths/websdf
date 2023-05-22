@@ -1,0 +1,34 @@
+.menu {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 2;
+
+  background-color: var(--bg-color);
+  box-shadow: .125rem .125rem 0 var(--shadow-color);
+}
+
+.menu li.separator {
+  height: .125rem;
+  background-color: var(--border-color);
+}
+
+.menu > li + li {
+  border-top: var(--border-color);
+}
+
+.menu > li > a,
+.menu > li > a:link,
+.menu > li > a:hover,
+.menu > li > a:active {
+  display: block;
+  border-bottom: none;
+  padding: var(--spc-half) var(--spc-double);
+}
+
+.menu > li > a:hover,
+.menu > li > a:active {
+  background-color: var(--bg-color-strong);
+}

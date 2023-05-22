@@ -4,18 +4,15 @@ import * as React from 'react'
 
 import sdfConverterPageStyles from '../styles/sdf-converter-page.module.css'
 import imageStyles from '../styles/images.module.css'
-import { SDFChannelMode, SDFConverterOverflowMode, SDFPrecisionMode, SDF_EXTERNAL_LINK } from '@/sdf/sdf-constants'
+import { DEFAULT_SDF_GENERATION_OPTIONS, SDF_EXTERNAL_LINK } from '@/sdf/sdf-constants'
 import { generateSDF } from '@/sdf/sdf-lib'
 import ImageUploader from '@/components/image-uploader'
-import SDFOverflowModeSelector from '@/components/sdf-overflow-mode-selector'
 import Section from '@/components/section'
-import SDFThresholdInput from '@/components/sdf-threshold-input'
 import DownloadBtn from '@/components/download-btn'
-import SDFChannelModeSelector from '@/components/sdf-channel-mode-selector'
-import SDFSignModeSelector from '@/components/sdf-sign-mode-selector'
-import SDFPrecisionModeSelector from '@/components/sdf-precision-selector'
 import SiteNav, { PAGES } from '@/components/site-nav'
-import SDFRadiusInput from '@/components/sdf-radius-input'
+import { SDFGenerationOptions } from '@/sdf/sdf-types'
+import { SDFParameters } from '@/components/sdf-parameters'
+import Icon from '@/components/icon'
 
 export interface SDFIfyPageProps { }
 
@@ -73,16 +70,10 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
   const [isGenerating, setIsGenerating] = React.useState<boolean>(false)
   const [inputImage, setInputImage] = React.useState<HTMLImageElement | null>(null)
   const [inputImageURL, setInputImageURL] = React.useState<string | null>(null)
-  const [radiusX, setRadiusX] = React.useState<number>(64)
-  const [radiusY, setRadiusY] = React.useState<number>(64)
-  const [precisionMode, setPrecisionMode] = React.useState<SDFPrecisionMode>(SDFPrecisionMode.APPROXIMATE)
-  const [numSamples, setNumSamples] = React.useState<number>(8)
-  const [threshold, setThreshold] = React.useState<number>(0.5)
-  const [overflowMode, setOverflowMode] = React.useState<SDFConverterOverflowMode>(
-    SDFConverterOverflowMode.CLIP
-  )
-  const [channelMode, setChannelMode] = React.useState<SDFChannelMode>(
-    SDFChannelMode.MONOCHROME
+  const [sdfGenerationOptions, setSdfGenerationOptions] = (
+    React.useState<SDFGenerationOptions>(
+      DEFAULT_SDF_GENERATION_OPTIONS
+    )
   )
   const [outputImageURL, setOutputImageURL] = React.useState<string>()
 
@@ -91,15 +82,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
       setIsGenerating(true)
       generateSDF(
         inputImage,
-        {
-          radiusX,
-          radiusY,
-          threshold,
-          overflowMode,
-          precisionMode,
-          numSamples,
-          channelMode,
-        }
+        sdfGenerationOptions,
       ).then((newOutputImageURL: string) => {
         setOutputImageURL(newOutputImageURL)
         setIsGenerating(false)
@@ -111,12 +94,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
     }
   }, [
     inputImageURL,
-    radiusX,
-    radiusY,
-    overflowMode,
-    precisionMode,
-    numSamples,
-    channelMode
+    sdfGenerationOptions,
   ])
 
   return (
@@ -127,7 +105,14 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
           <div className={sdfConverterPageStyles.sdfConverterGrid}>
             <Section
               id="input-section"
-              title='Input image'
+              title={
+                <>
+                  <i
+                    className='file'
+                  ></i>
+                  Input image
+                </>
+              }
               variant='secondary'
               topLevel
               subSections={[
@@ -154,54 +139,41 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
             </Section>
             <Section
               id="parameters-section"
-              title='Parameters'
+              title={
+                <>
+                  <i
+                    className='parameters'
+                  ></i>
+                  Parameters
+                </>
+              }
               variant='primary'
               topLevel
             >
-              <SDFPrecisionModeSelector
-                initialPrecisionMode={precisionMode}
-                onChange={(newPrecisionMode: SDFPrecisionMode) => {
-                  setPrecisionMode(newPrecisionMode)
-                }}
-              />
-              <SDFSignModeSelector
-                onChange={() => {}}
-              />
-              <SDFThresholdInput
-                initialThreshold={threshold}
-                onChange={(newThreshold: number) => {
-                  setThreshold(newThreshold)
-                }}
-              />
-              <SDFRadiusInput
-                initialRadiusX={radiusX}
-                initialRadiusY={radiusY}
-                onChange={(newRadiusX: number, newRadiusY: number) => {
-                  setRadiusX(newRadiusX)
-                  setRadiusY(newRadiusY)
-                }}
-              />
-              <SDFOverflowModeSelector
-                onChange={(newOverflowMode: SDFConverterOverflowMode) => {
-                  setOverflowMode(newOverflowMode)
-                }}
-              />
-              <SDFChannelModeSelector
-                onChange={(newChannelMode: SDFChannelMode) => {
-                  setChannelMode(newChannelMode)
+              <SDFParameters
+                sdfGenerationOptions={sdfGenerationOptions}
+                onChange={(newSdfGenerationOptions: SDFGenerationOptions) => {
+                  setSdfGenerationOptions(newSdfGenerationOptions)
                 }}
               />
             </Section>
             <Section
               id="output-section"
               title={<>
-                Distance field texture
-                (
-                  <a
-                    href={SDF_EXTERNAL_LINK}
-                    target='_blank'
-                  >What's a distance field?</a>
-                )
+                <i
+                  className='cupcake'
+                ></i>
+                Output texture
+                <span
+                  className='small float-right'
+                >
+                  (
+                    <a
+                      href={SDF_EXTERNAL_LINK}
+                      target='_blank'
+                    >Learn more</a>
+                  )
+                </span>
               </>}
               variant='tertiary'
               topLevel

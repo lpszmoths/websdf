@@ -2,11 +2,12 @@
   padding: var(--spc) var(--spc-double);
   background: var(--bg-color);
   color: var(--fg-color);
-  border-radius: var(--spc-half);
+  border-radius: var(--spc);
+  box-shadow: -.25rem .25rem 0 var(--drop-shadow-color);
 }
 
 .box.topLevel {
-  box-shadow: -.25rem .25rem 0 var(--drop-shadow-color);
+  border-radius: 0;
 }
 
 .boxSection {
@@ -19,7 +20,6 @@
   composes: boxSection;
   margin-top: 0;
   margin-bottom: 0;
-  text-shadow: .0625rem .0625rem 0 var(--shadow-color);
 }
 
 .boxTitle:first-child,
@@ -40,9 +40,11 @@
 @media screen and (min-width: 600px) {
   .box {
     margin: var(--spc);
+    border-radius: var(--spc-half);
   }
 
   .box.top-level {
     border-radius: var(--spc);
+    box-shadow: -.25rem .25rem 0 var(--drop-shadow-color);
   }
 }

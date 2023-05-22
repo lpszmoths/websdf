@@ -1,0 +1,14 @@
+@font-face {
+  font-family: "ChiKareGo2";
+  src: url('../fonts/ChiKareGo2.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: "FindersKeepers";
+  src: url('../fonts/FindersKeepers.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: "ChicagoFLF";
+  src: url('../fonts/ChicagoFLF.ttf') format('truetype');
+}
