@@ -1,0 +1,34 @@
+.colors-primary {
+  --fg-color: var(--c0);
+  --bg-color: var(--c3);
+  --fg-color-strong: var(--c00);
+  --bg-color-strong: var(--c4);
+  --border-color: var(--c1);
+  --border-color-strong: var(--c0);
+  --shadow-color: var(--c2);
+  --drop-shadow-color: var(--c1);
+}
+
+.colors-secondary {
+  --fg-color: var(--c0);
+  --bg-color: var(--c2);
+  --fg-color-strong: var(--c00);
+  --bg-color-strong: var(--c3);
+  --border-color: var(--c1);
+  --border-color-strong: var(--c0);
+  --shadow-color: var(--c1);
+  --drop-shadow-color: var(--c1);
+}
+
+.colors-tertiary {
+  --fg-color: var(--c3);
+  --bg-color: var(--c1);
+  --fg-color-strong: var(--c4);
+  --bg-color-strong: var(--c0);
+  --border-color: var(--c2);
+  --border-color-strong: var(--c3);
+  --shadow-color: var(--c0);
+  --drop-shadow-color: var(--c00);
+  
+  text-shadow: .0625rem .0625rem 0 var(--shadow-color);
+}

@@ -1,55 +1,37 @@
 #version 300 es
-
 precision highp float;
 
-const int NUM_OFFSETS = 8;
-
-const vec2 OFFSET_DIRECTIONS[NUM_OFFSETS] = vec2[](
-  vec2(-1.0, -1.0), vec2( 0.0, -1.0), vec2( 1.0, -1.0),
-  vec2(-1.0,  0.0),                   vec2( 1.0,  0.0),
-  vec2(-1.0,  1.0), vec2( 0.0,  1.0), vec2( 1.0,  1.0)
-);
-
-const float SQRT_2 = 1.4142135623730950488016887242097;
-const float SQRT_2_INV = 0.70710678118654752440084436210485;
-
-const float DISTANCE_MULTIPLIERS[NUM_OFFSETS] = float[](
-  1.0,        SQRT_2_INV, 1.0,
-  SQRT_2_INV,             SQRT_2_INV,
-  1.0,        SQRT_2_INV, 1.0
-);
-
-const float KERNEL[25] = float[](
-  1.0,  4.0,  7.0,  4.0, 1.0,
-  4.0, 16.0, 26.0, 16.0, 4.0,
-  7.0, 26.0, 41.0, 26.0, 7.0,
-  4.0, 16.0, 26.0, 16.0, 4.0,
-  1.0,  4.0,  7.0,  4.0, 1.0 
-);
-const float KERNEL_SUM = 273.0;
-
-const float INFINITE_DISTANCE = 65536.0;
-
+/* provided by the user */
 uniform sampler2D uTexture;
-uniform vec2 uRadius;
-uniform vec2 uTexelSize;
 uniform float uThreshold;
+uniform float uNumSamples;
 uniform int uEnableRGB;
+uniform float uRadius;
+
+/* built-in */
+uniform vec2 uTexelSize;
+
+/* these change with each pass */
+uniform float uProgress; /* [1.0/numPasses, 1.0] */
+
 in vec2 vTexCoord;
 out vec4 outColor;
 
-float sampleLod(vec2 uv, float lod) {
-  float value = textureLod(uTexture, uv, lod).r;
-  return value;
-}
+/* default distance value */
+const float INFINITE_DISTANCE = 65536.0;
 
-float sampleLodWithOffset(vec2 uvOffsetAmount, vec2 offsetDirection, float lod) {
-  vec2 actualUV = vTexCoord + uvOffsetAmount * offsetDirection;
-  float value = sampleLod(
-    actualUV,
-    lod
-  );
-  return value;
+
+
+/**
+ * Returns 1 if outside the shape, 0 if inside
+*/
+float getSdfSign(float value) {
+  if (value > uThreshold) {
+    return 1.0;
+  }
+  else {
+    return 0.0;
+  }
 }
 
 /**
@@ -72,118 +54,162 @@ float mapDistanceToProximity(float dist, float max_dist) {
   return d;
 }
 
-vec3 findApproximateUnsignedDistanceAtLod(float referenceValue, float sign, float lod) {
-  vec2 offsetAmount = uTexelSize * pow(2.0, lod);
-  float offsetDistance = length(offsetAmount);
-  float minValueFound = 1.0;
-  float minDistFound = INFINITE_DISTANCE;
-  vec2 minDistanceDirection = vec2(0.0, 0.0);
-
-  for (int neighborIdx = 0; neighborIdx < NUM_OFFSETS; neighborIdx++) {
-    vec2 offsetDirection = OFFSET_DIRECTIONS[neighborIdx];
-    float value = sampleLodWithOffset(
-      offsetAmount,
-      offsetDirection,
-      lod
-    );
-    float dist = offsetDistance * DISTANCE_MULTIPLIERS[neighborIdx];
-    if (value <  0.5 && value < minValueFound) {
-      minValueFound = value;
-      minDistFound = dist;
-      minDistanceDirection = offsetDirection * DISTANCE_MULTIPLIERS[neighborIdx];
-    }
-  }
-
-  return vec3(minDistanceDirection.x, minDistanceDirection.y, minDistFound);
+/**
+ * Samples uTexture at a specific uv
+ */
+float sampleTex(vec2 uv) {
+  float value = texture(uTexture, uv).r;
+  return value;
 }
 
-vec3 findApproximateUnsignedDistance() {
-  /* query the current texel at max preision*/
-  float currentValue = sampleLod(vTexCoord, 0.0);
+/**
+ * Compares the signed oriented distance at the
+ * specified offset, with the current best
+ * signed oriented distance. If the new
+ * distance is shorter, replaces the current
+ * best distance with the new one.
+ */
+void evaluateSignedOrientedDistance(
+  inout vec4 currentSignedOrientedDistance,
+  float currentSdfSign,
+  vec2 uvOffset
+) {
+  float dist = length(uvOffset);
+  vec4 newSignedOrientedDistance = vec4(
+    uvOffset.x * uRadius,
+    uvOffset.y * uRadius,
+    dist,
+    1.0
+  );
+  vec2 uv = vTexCoord + uvOffset;
+  float value = sampleTex(uv);
+  float sign = getSdfSign(value);
+  float signDiff = abs(currentSdfSign - sign);
+
+  if (newSignedOrientedDistance.z < currentSignedOrientedDistance.z) {
+    currentSignedOrientedDistance = (
+      (1.0 - signDiff) * currentSignedOrientedDistance +
+      signDiff * newSignedOrientedDistance
+    );
+  }
+}
+
+/**
+ * Returns the signed direction and distance.
+ * The last component (.a) is 1.0 if a
+ * distance was found, 0.0 otherwise.
+ */
+vec4 findSignedDistance() {
+  /* query the current texel at max preision */
+  float currentValue = sampleTex(vTexCoord);
 
   /* are we inside or outside? */
-  float sdfSign = 1.0; /* outside */
-  if (currentValue <= uThreshold) {
-    sdfSign = -1.0; /* inside */
+  float currentSdfSign = getSdfSign(currentValue);
 
-    /* TODO implement inner distance */
-    return vec3(
-      0.0,
-      0.0,
+  if (currentSdfSign < 0.5) {
+    return vec4(
+      1.0,
+      1.0,
+      1.0,
       1.0
     );
   }
   
-  /* go up in lods until we find a distance */
-  vec3 dist = vec3(INFINITE_DISTANCE, INFINITE_DISTANCE, INFINITE_DISTANCE);
-  for (float lod = 0.0; lod <= 6.0; lod += 1.0) {
-    dist = findApproximateUnsignedDistanceAtLod(
-      currentValue,
-      sdfSign,
-      lod
+  vec4 bestSignedOrientedDistance = vec4(
+    0.0,
+    0.0,
+    INFINITE_DISTANCE,
+    0.0
+  );
+  vec2 radius = uRadius * uTexelSize * uProgress;
+  vec2 increment = uTexelSize / uNumSamples;
+  float maxDistance = uRadius * min(uTexelSize.x, uTexelSize.y);
+
+  /* iterate through the top and bottom edge */
+  for (
+    float i = -radius.x;
+    i <= radius.x;
+    i += increment.x
+  ) {
+    vec2 uvOffset = vec2(i, -radius.y);
+    float len = length(uvOffset);
+    // if (len > maxDistance) {
+    //   continue;
+    // }
+
+    evaluateSignedOrientedDistance(
+      bestSignedOrientedDistance,
+      currentSdfSign,
+      uvOffset
     );
-    if (dist.z < INFINITE_DISTANCE) {
-      dist.z = pow(2.0, lod);
-      break;
-    }
-  }
-
-  dist.x = 1.0 - mapSignedToUnsigned(dist.x);
-  dist.y = 1.0 - mapSignedToUnsigned(dist.y);
-  //dist.x = mapDistanceToProximity(dist.x, pow(2.0, 6.0));
-  //dist.y = mapDistanceToProximity(dist.y, pow(2.0, 6.0));
-  dist.z = mapDistanceToProximity(dist.z, pow(2.0, 6.0));
-
-  return dist;
-}
-
-vec3 findSignedDistance() {
-  /* query the current texel at max preision*/
-  float currentValue = sampleLod(vTexCoord, 0.0);
-
-  /* are we inside or outside? */
-  float sdfSign = 1.0; /* outside */
-  if (currentValue <= uThreshold) {
-    sdfSign = -1.0; /* inside */
-
-    /* TODO implement inner distance */
-    return vec3(
-      0.0,
-      0.0,
-      1.0
+    uvOffset = vec2(i, radius.y);
+    evaluateSignedOrientedDistance(
+      bestSignedOrientedDistance,
+      currentSdfSign,
+      uvOffset
     );
   }
+
+  /* iterate through the left and right edges */
+  for (
+    float j = increment.y - radius.y;
+    j <= radius.y - increment.y;
+    j += increment.y
+  ) {
+    vec2 uvOffset = vec2(-radius.x, j);
+    float len = length(uvOffset);
+    // if (len > maxDistance) {
+    //   continue;
+    // }
+
+    evaluateSignedOrientedDistance(
+      bestSignedOrientedDistance,
+      currentSdfSign,
+      uvOffset
+    );
+    uvOffset = vec2(radius.x, j);
+    evaluateSignedOrientedDistance(
+      bestSignedOrientedDistance,
+      currentSdfSign,
+      uvOffset
+    );
+  }
+
+
+  bestSignedOrientedDistance.x = mapSignedToUnsigned(
+    bestSignedOrientedDistance.x
+  );
+  // bestSignedOrientedDistance.x = mapDistanceToProximity(
+  //   bestSignedOrientedDistance.x,
+  //   maxDistance
+  // );
+
+  bestSignedOrientedDistance.y = mapSignedToUnsigned(
+    bestSignedOrientedDistance.y
+  );
+  // bestSignedOrientedDistance.y = mapDistanceToProximity(
+  //   bestSignedOrientedDistance.y,
+  //   maxDistance
+  // );
   
-  /* go up in lods until we find a distance */
-  vec3 dist = vec3(INFINITE_DISTANCE, INFINITE_DISTANCE, INFINITE_DISTANCE);
-  for (float lod = 0.0; lod <= 8.0; lod += 1.0) {
-    dist = findApproximateUnsignedDistanceAtLod(
-      currentValue,
-      sdfSign,
-      lod
-    );
-    if (dist.z < INFINITE_DISTANCE) {
-      dist.z = pow(2.0, lod);
-      break;
-    }
-  }
+  bestSignedOrientedDistance.z = mapDistanceToProximity(
+    bestSignedOrientedDistance.z,
+    maxDistance
+  );
+  //bestSignedOrientedDistance.z = 1.0 - bestSignedOrientedDistance.z;
 
-  dist.x = mapSignedToUnsigned(dist.x);
-  dist.y = mapSignedToUnsigned(dist.y);
-  //dist.x = mapDistanceToProximity(dist.x, pow(2.0, 8.0));
-  //dist.y = mapDistanceToProximity(dist.y, pow(2.0, 8.0));
-  dist.z = mapDistanceToProximity(dist.z, pow(2.0, 8.0));
-
-  return dist;
+  return bestSignedOrientedDistance;
 }
 
 void main()
 {
-  vec3 sdfValue = findApproximateUnsignedDistance();
+  vec4 sdfValue = findSignedDistance();
 
   if (uEnableRGB != 1) {
-    sdfValue = vec3(sdfValue.z, sdfValue.z, sdfValue.z);
+    sdfValue = vec4(sdfValue.z, sdfValue.z, sdfValue.z, sdfValue.w);
+    //sdfValue.x = uProgress;
+    //sdfValue.z = 1.0 - uProgress;
   }
 
-  outColor = vec4(sdfValue.x, sdfValue.y, sdfValue.z, 1.0);
+  outColor = vec4(sdfValue.x, sdfValue.y, sdfValue.z, sdfValue.w);
 }

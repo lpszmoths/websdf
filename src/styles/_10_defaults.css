@@ -1,0 +1,158 @@
+body {
+  --fg-color: var(--c2);
+  --bg-color: var(--c0);
+  --fg-color-strong: var(--c2);
+  --bg-color-strong: var(--c0);
+  --border-color: var(--c1);
+  --border-color-strong: var(--c2);
+  --shadow-color: var(--c00);
+
+  font-size: 62.5%;
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  margin: 0;
+  padding: 0;
+  padding-top: calc(var(--spc-double) * 2.25);
+}
+
+a,
+a:link,
+a:visited {
+  text-decoration: none;
+  color: var(--fg-color);
+}
+
+a:not(.button),
+a:link:not(.button),
+a:visited:not(.button) {
+  border-bottom: dashed .0625rem var(--fg-color);
+}
+
+a:hover, a:active {
+  text-decoration: none;
+  color: var(--fg-color-strong);
+  border-bottom: solid .0625rem var(--fg-color);
+}
+
+body,
+input,
+select,
+button,
+label,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--normal-font-family);
+}
+
+small,
+.small {
+  font-family: var(--small-font-family);
+  font-weight: var(--small-font-weight);
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input,
+select,
+button,
+small {
+  font-size: 0.875rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+select,
+button,
+strong {
+  font-weight: normal;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote {
+  margin: .5rem 0;
+}
+
+* + i,
+* + small,
+* + span,
+* + strong {
+  margin-left: .5em;
+}
+
+strong {
+  color: var(--fg-color-strong);
+  text-shadow: .0625rem .0625rem 0 var(--shadow-color);
+}
+
+input[type=text],
+input[type=number] {
+  border-radius: .125rem;
+  border: solid .125rem var(--border-color);
+  background-color: var(--bg-color-strong);
+  margin: .125rem .25rem;
+}
+
+fieldset {
+  margin: 0;
+  padding: var(--spc-half) var(--spc);
+  border: solid .125rem var(--border-color);
+  border-radius: var(--spc-half);
+}
+
+* + fieldset {
+  margin-top: 1rem;
+}
+
+ul {
+  padding: 0 0 0 2rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  list-style-type: square;
+}
+
+ul.no-bullets,
+ul.no-bullets > li {
+  list-style: none;
+}
+
+ul.no-bullets {
+  padding: 0;
+  margin: 0;
+}
+
+ul.no-bullets.compact > li {
+  display: inline-block;
+}
+
+* + ul {
+  margin-top: 0.5rem;
+}
+
+section + section {
+  margin-top: .125rem;
+}
+
+@media screen and (min-width: 600px) {
+  main {
+    padding: var(--spc-half) var(--spc);
+  }
+}

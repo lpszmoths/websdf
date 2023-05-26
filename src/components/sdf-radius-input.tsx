@@ -3,58 +3,41 @@
 import * as React from 'react'
 
 export interface SDFRadiusInputProps {
-  initialRadiusX: number
-  initialRadiusY: number
-  onChange: (newRadiusX: number, newRadiusY: number) => void
+  initialRadius: number
+  onChange: (
+    newRadius: number,
+  ) => void
 }
 
 export default function SDFRadiusInput({
-  initialRadiusX,
-  initialRadiusY,
+  initialRadius,
   onChange
 }: SDFRadiusInputProps) {
-  const [radiusX, setRadiusX] = React.useState<number>(initialRadiusX)
-  const [radiusY, setRadiusY] = React.useState<number>(initialRadiusY)
+  const [radius, setRadius] = React.useState<number>(initialRadius)
 
   React.useEffect(() => {
-    onChange(radiusX, radiusY)
+    onChange(radius)
   }, [
-    radiusX,
-    radiusY
+    radius,
   ])
 
   return (
     <>
       <fieldset>
-      <h3>Radius</h3>
-      <ul className='no-bullets'>
-        <li>
+        <h3>Radius</h3>
+        <p>
           <label>
             <input
               type='number'
-              value={radiusX}
+              value={radius}
               min={0}
+              size={4}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setRadiusX(parseInt(e.target.value))
+                setRadius(parseInt(e.target.value))
               }}
             ></input>
-            Horizontal
           </label>
-        </li>
-        <li>
-          <label>
-            <input
-              type='number'
-              value={radiusY}
-              min={0}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setRadiusY(parseInt(e.target.value))
-              }}
-            ></input>
-            Vertical
-          </label>
-        </li>
-      </ul>
+        </p>
       </fieldset>
     </>
   )

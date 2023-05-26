@@ -2,23 +2,17 @@
 
 import * as React from 'react'
 
-import { SDFConverterOverflowMode } from '@/sdf/sdf-constants'
+import { SDFConverterOverflowMode } from '@/sdf/sdf-types'
 
 export interface SDFOverflowModeSelectorProps {
+  overflowMode: SDFConverterOverflowMode
   onChange: (newOverflowMode: SDFConverterOverflowMode) => void
 }
 
-export default function SDFOverflowModeSelector({ onChange }: SDFOverflowModeSelectorProps) {
-  const [overflowMode, setOverflowMode] = React.useState<SDFConverterOverflowMode>(
-    SDFConverterOverflowMode.CLIP
-  )
-
-  React.useEffect(() => {
-    onChange(overflowMode)
-  }, [
-    overflowMode
-  ])
-
+export default function SDFOverflowModeSelector({
+  overflowMode,
+  onChange
+}: SDFOverflowModeSelectorProps) {
   return (
     <>
       <fieldset>
@@ -34,7 +28,7 @@ export default function SDFOverflowModeSelector({ onChange }: SDFOverflowModeSel
                   overflowMode === SDFConverterOverflowMode.CLIP
                 }
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setOverflowMode(e.target.value as SDFConverterOverflowMode)
+                  onChange(e.target.value as SDFConverterOverflowMode)
                 }}
               ></input>
               <span>
@@ -52,7 +46,7 @@ export default function SDFOverflowModeSelector({ onChange }: SDFOverflowModeSel
                   overflowMode === SDFConverterOverflowMode.WRAP
                 }
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setOverflowMode(e.target.value as SDFConverterOverflowMode)
+                  onChange(e.target.value as SDFConverterOverflowMode)
                 }}
               ></input>
               <span>
@@ -70,7 +64,7 @@ export default function SDFOverflowModeSelector({ onChange }: SDFOverflowModeSel
                   overflowMode === SDFConverterOverflowMode.EXPAND_AS_NECESSARY
                 }
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setOverflowMode(e.target.value as SDFConverterOverflowMode)
+                  onChange(e.target.value as SDFConverterOverflowMode)
                 }}
                 disabled
               ></input>

@@ -1,0 +1,70 @@
+button,
+.button {
+  display: inline-block;
+  padding: var(--spc-half) var(--spc-double);
+  margin: var(--spc-half);
+  background-color: var(--bg-color-strong);
+  color: var(--fg-color-strong);
+  line-height: 1;
+  border-radius: var(--spc-double);
+  border: solid .125rem var(--fg-color);
+}
+
+button:hover,
+.button:hover {
+  
+}
+
+button:active,
+.button:active,
+button.flat:active,
+.button.flat:active {
+  color: var(--bg-color-strong);
+  background-color: var(--fg-color-strong);
+  border-color: var(--border-color-strong);
+}
+
+button::after,
+.button::after,
+button::before,
+.button::before {
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: solid .125rem var(--fg-color);
+  border-radius: var(--spc-double);
+}
+
+button.large,
+.button.large {
+  position: relative;
+  margin: var(--spc);
+  padding: calc(var(--spc-half) * 2) calc(var(--spc-double) * 1.25);
+  border-width: .25rem;
+  border-radius: calc(var(--spc-double) + var(--spc-half));
+}
+
+button.large::after,
+.button.large::after {
+  content: ' ';
+  top: .125rem;
+  left: .125rem;
+  right: .125rem;
+  bottom: .125rem;
+  border-radius: var(--spc-double);
+}
+
+button.flat,
+.button.flat {
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+button.upload-button,
+.button.upload-button {
+  position: relative;
+}

@@ -1,0 +1,130 @@
+
+
+.site-nav-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--spc-double) * 2.125);
+  box-shadow: 0 .25rem 0 var(--c00);
+  z-index: 1;
+}
+
+nav.site-nav {
+  --fg-color: var(--c1);
+  --fg-color-strong: var(--c0);
+  --bg-color: var(--c3);
+  --bg-color-strong: var(--c4);
+  --border-color: var(--c2);
+  --border-color-strong: var(--c1);
+  color: var(--fg-color);
+  background-color: var(--bg-color);
+
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  /* padding: 0 var(--spc-double); */
+  padding: 0;
+  width: 100%;
+  z-index: 2;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+nav.site-nav::before,
+nav.site-nav::after {
+  position: absolute;
+  content: ' ';
+  display: block;
+  width: .5rem;
+  height: .5rem;
+  top: -.5rem;
+  border-top: solid .5rem black;
+}
+
+nav.site-nav::before {
+  left: -.5rem;
+  border-left: solid .5rem black;
+  border-top-left-radius: 1rem;
+}
+
+nav.site-nav::after {
+  right: -.5rem;
+  border-right: solid .5rem black;
+  border-top-right-radius: 1rem;
+}
+
+nav.site-nav h1 {
+  color: var(--fg-color-strong);
+  /*text-shadow: -.0625rem -.0625rem 0 var(--border-color),
+               .0625rem .0625rem 0 var(--bg-color-strong);*/
+}
+
+nav.site-nav h1 > small {
+  color: var(--fg-color);
+  /*text-shadow: -.0625rem -.0625rem 0 var(--border-color),
+               .0625rem .0625rem 0 var(--bg-color-strong);*/
+}
+
+nav.site-nav > ul {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 0;
+}
+
+nav.site-nav > ul > li {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+}
+
+nav.site-nav > ul > li.spacer {
+  flex: 1 1 0;
+}
+
+nav.site-nav > ul > li > button,
+nav.site-nav > ul > li > .button {
+  margin: calc(var(--spc-half) * 0.5);
+}
+
+nav.site-nav > ul > li > button.flat,
+nav.site-nav > ul > li > .button.flat {
+  display: flex;
+  flex-direction: row;
+  margin: 0;
+  align-items: center;
+}
+
+nav.site-nav > ul > li > h1,
+nav.site-nav > ul > li > div,
+nav.site-nav > ul > li > span {
+  margin-left: var(--spc);
+  margin-right: var(--spc);
+}
+
+.site-nav-container ~ .overlay-container {
+  position: fixed;
+  top: calc(var(--spc-double) * 2);
+}
+
+.site-nav-container ~ .overlay-container > .menu {
+  border-top: solid .125rem var(--border-color);
+}
+
+@media screen and (min-width: 600px) {
+  .site-nav-container ~ .overlay-container > .menu {
+    align-items: stretch;
+    width: fit-content;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+  }
+  .site-nav-container ~ .overlay-container > .menu li > a {
+    width: auto;
+  }
+}

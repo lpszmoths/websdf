@@ -1,0 +1,32 @@
+:root {
+  --normal-box-shadow-radius: .25em;
+  --normal-box-shadow-opacity: .25;
+  --normal-box-shadow: 0 .125em var(--normal-box-shadow-radius) rgba(0, 0, 0, var(--normal-box-shadow-opacity));
+
+  /* --normal-font-family: "ChiKareGo2", 'Chicago', Verdana, sans-serif; */
+  --normal-font-family: "ChicagoFLF", 'Chicago', Verdana, sans-serif;
+  /* --small-font-family: "FindersKeepers", Geneva, 'Lucida Sans Unicode', sans-serif; */
+  /* --small-font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstream Vera Sans", "Trebuchet MS", Verdana, "Verdana Ref", sans-serif; */
+  --small-font-family: Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "DejaVu Sans", "Bitstream Vera Sans", "Liberation Sans", Verdana, "Verdana Ref", sans-serif;
+  --small-font-weight: 600;
+
+  --c0: #543344;
+  --ca1: #8b4049;
+  --ca2: #ae6a47;
+  --ca3: #caa05a;
+  --cb1: #515262;
+  --cb2: #63787d;
+  --cb3: #8ea091;
+  --c4: #c9cca1;
+
+  --c00: #000;
+  --c0: hsl(186, 100%, 15%);
+  --c1: #ff7777;
+  --c2: #ffce96;
+  --c3: #f1f2da;
+  --c4: #fff;
+
+  --spc-half: 0.25rem;
+  --spc: 0.5rem;
+  --spc-double: 1rem;
+}

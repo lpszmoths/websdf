@@ -1,0 +1,59 @@
+.inline {
+  display: inline-flex;
+}
+
+.columns {
+  display: flex;
+  flex-direction: row;
+}
+
+.columns.centered {
+  align-items: center;
+}
+
+.columns.align-right {
+  justify-content: flex-end;
+}
+
+.columns > * {
+  flex: 0 0 auto;
+  min-width: 10rem;
+}
+
+.columns > * + * {
+  margin-left: var(--spc-double);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.rows.centered {
+  align-items: center;
+}
+
+.rows > * {
+  flex: 0 0 auto;
+}
+
+.rows > * + * {
+  margin-top: var(--spc);
+}
+
+.columns > *.fit-content,
+.rows > *.fit-content {
+  flex: 0 0 auto;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.float-right {
+  float: right;
+}

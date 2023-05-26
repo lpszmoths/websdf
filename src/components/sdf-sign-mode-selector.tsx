@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 
-import { SDFSignMode } from '@/sdf/sdf-constants'
+import { SDFSignMode } from '@/sdf/sdf-types'
 import RadioSelector from './radio-selector'
 
 export interface SDFSignModeSelectorProps {

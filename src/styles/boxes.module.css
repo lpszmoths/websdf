@@ -1,57 +1,13 @@
 .box {
-  --fg-color: var(--c0);
-  --bg-color: var(--c3);
-  --fg-color-strong: var(--c0);
-  --bg-color-strong: var(--c3);
-  --border-color: var(--c1);
-  --border-color-strong: var(--c0);
-  --shadow-color: var(--c2);
-  --drop-shadow-color: var(--c1);
-
   padding: var(--spc) var(--spc-double);
   background: var(--bg-color);
   color: var(--fg-color);
-  border-radius: var(--spc-half);
-}
-
-.box.topLevel {
+  border-radius: var(--spc);
   box-shadow: -.25rem .25rem 0 var(--drop-shadow-color);
 }
 
-.boxPrimary {
-  composes: box;
-  --fg-color: var(--c0);
-  --bg-color: var(--c3);
-  --fg-color-strong: var(--c00);
-  --bg-color-strong: var(--c3);
-  --border-color: var(--c1);
-  --border-color-strong: var(--c0);
-  --shadow-color: var(--c2);
-  --drop-shadow-color: var(--c1);
-}
-
-.boxSecondary {
-  composes: box;
-  --fg-color: var(--c0);
-  --bg-color: var(--c2);
-  --fg-color-strong: var(--c00);
-  --bg-color-strong: var(--c3);
-  --border-color: var(--c1);
-  --border-color-strong: var(--c0);
-  --shadow-color: var(--c1);
-  --drop-shadow-color: var(--c1);
-}
-
-.boxTertiary {
-  composes: box;
-  --fg-color: var(--c3);
-  --bg-color: var(--c1);
-  --fg-color-strong: var(--c4);
-  --bg-color-strong: var(--c0);
-  --border-color: var(--c2);
-  --border-color-strong: var(--c3);
-  --shadow-color: var(--c0);
-  --drop-shadow-color: var(--c00);
+.box.topLevel {
+  border-radius: 0;
 }
 
 .boxSection {
@@ -64,7 +20,6 @@
   composes: boxSection;
   margin-top: 0;
   margin-bottom: 0;
-  text-shadow: .0625rem .0625rem 0 var(--shadow-color);
 }
 
 .boxTitle:first-child,
@@ -85,9 +40,11 @@
 @media screen and (min-width: 600px) {
   .box {
     margin: var(--spc);
+    border-radius: var(--spc-half);
   }
 
-  .box.top-level {
+  .box.topLevel {
     border-radius: var(--spc);
+    box-shadow: -.25rem .25rem 0 var(--drop-shadow-color);
   }
 }
