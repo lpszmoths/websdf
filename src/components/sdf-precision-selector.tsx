@@ -4,7 +4,7 @@ import * as React from 'react'
 
 import { SDFPrecisionMode, SDFSamplingMode } from '@/sdf/sdf-types'
 import RadioSelector from './radio-selector'
-import { SelectSelector } from './select-selector'
+import { CustomSelect } from './primitives/custom-select'
 
 const PRECISION_MODE_OPTIONS = {
   [SDFPrecisionMode.APPROXIMATE]: 'Approximate',
@@ -12,12 +12,11 @@ const PRECISION_MODE_OPTIONS = {
 }
 
 const SAMPLING_MODE_OPTIONS: Record<SDFSamplingMode, string> = {
-  [SDFSamplingMode.BESTEST]: '2x (bestest)',
-  [SDFSamplingMode.BEST]: '1x (best)',
-  [SDFSamplingMode.BALANCED]: '0.5x (balanced)',
-  [SDFSamplingMode.FAST]: '1/4 (fast)',
-  [SDFSamplingMode.FASTER]: '1/8 (fastest)',
-  [SDFSamplingMode.FASTEST]: '1/16 (fastest)',
+  [SDFSamplingMode.BESTEST]: '200% (smooth)',
+  [SDFSamplingMode.BEST]: '100% (accurate)',
+  [SDFSamplingMode.BALANCED]: '50% (balanced)',
+  [SDFSamplingMode.FAST]: '25% (fast)',
+  [SDFSamplingMode.FASTER]: '12.5% (fastest)',
 }
 
 export interface SDFPrecisionModeSelectorProps {
@@ -38,7 +37,11 @@ export default function SDFPrecisionModeSelector({
     <>
       <fieldset>
         <h3>Precision</h3>
-        <RadioSelector
+        <p className='small'>
+          Determines what percentage of pixels will be sampled.
+        </p>
+        {/* forcing exact mode */}
+        {/* <RadioSelector
           name='precision-mode'
           options={PRECISION_MODE_OPTIONS}
           initialOption={precisionMode}
@@ -49,10 +52,9 @@ export default function SDFPrecisionModeSelector({
             )
           }}
           compact
-        />
+        /> */}
         
-        <SelectSelector
-          title='Samples' 
+        <CustomSelect
           options={SAMPLING_MODE_OPTIONS}
           value={samplingMode}
           onChange={(newSamplingMode: SDFSamplingMode) => {
@@ -65,7 +67,10 @@ export default function SDFPrecisionModeSelector({
             precisionMode != SDFPrecisionMode.EXACT
           }
         />
-        <p></p>
+        <p className='small'>
+          Values under 100% skip some pixels.
+          Values over 100% interpolate between pixels.
+        </p>
       </fieldset>
     </>
   )

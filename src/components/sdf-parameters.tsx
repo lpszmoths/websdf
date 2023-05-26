@@ -53,13 +53,11 @@ export function SDFParameters({
         }
       />
       <SDFRadiusInput
-        initialRadiusX={sdfGenerationOptions.radiusX}
-        initialRadiusY={sdfGenerationOptions.radiusY}
-        onChange={(newRadiusX: number, newRadiusY: number) => {
+        initialRadius={sdfGenerationOptions.radius}
+        onChange={(newRadius: number) => {
           onChange({
             ...sdfGenerationOptions,
-            radiusX: newRadiusX,
-            radiusY: newRadiusY,
+            radius: newRadius,
           })
         }}
       />

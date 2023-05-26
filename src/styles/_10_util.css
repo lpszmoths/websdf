@@ -41,6 +41,11 @@
   margin-top: var(--spc);
 }
 
+.columns > *.fit-content,
+.rows > *.fit-content {
+  flex: 0 0 auto;
+}
+
 .align-center {
   text-align: center;
 }

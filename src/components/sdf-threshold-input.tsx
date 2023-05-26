@@ -15,7 +15,7 @@ export default function SDFThresholdInput({
     <>
       <fieldset>
       <h3>Threshold (0.0 - 1.0)</h3>
-      <p className='small'>Pixels darker than this value are considered to be <em>inside</em> the SDF shape. Increase this value if there is too much noise in the signed distance field. Default: <strong>0.5</strong></p>
+      <p className='small'>Pixels darker than this value are considered to be <em>inside</em> the SDF shape. Increase this value if the final image is too noisy. Default: <strong>0.5</strong></p>
       <ul className='no-bullets'>
         <li>
           <label>

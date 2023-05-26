@@ -94,6 +94,15 @@ input[type=number] {
   display: block;
 }
 
+.radio-container input[type=radio] {
+  display: none;
+}
+
+.radio-container input[type=radio] + .radio-proxy {
+  display: inline-block;
+  border: solid .125rem var(--border-color);
+}
+
 .toggle-content {
   display: none;
 }

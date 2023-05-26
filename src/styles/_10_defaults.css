@@ -91,6 +91,13 @@ blockquote {
   margin: .5rem 0;
 }
 
+* + i,
+* + small,
+* + span,
+* + strong {
+  margin-left: .5em;
+}
+
 strong {
   color: var(--fg-color-strong);
   text-shadow: .0625rem .0625rem 0 var(--shadow-color);

@@ -12,7 +12,15 @@ export interface SDFChannelModeSelectorProps {
 
 const CHANNEL_MODE_OPTIONS = {
   [SDFChannelMode.MONOCHROME]: 'Monochrome',
-  [SDFChannelMode.RGB]: 'RGB (RG = direction, B = distance)',
+  [SDFChannelMode.RGBA]: (
+    <>
+      <span>RGBA</span>
+      <span>(RG = direction,
+        B = distance,
+        A = traversed)
+      </span>
+    </>
+  ),
 }
 
 export default function SDFChannelModeSelector({
@@ -30,7 +38,6 @@ export default function SDFChannelModeSelector({
           onChange={(newOption: string) => {
             onChange(newOption as SDFChannelMode)
           }}
-          compact
         />
       </fieldset>
     </>

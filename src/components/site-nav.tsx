@@ -30,7 +30,7 @@ export default function SiteNav({ current }: SiteNavProps) {
             </li>
             <li>
               <h1>
-                {APP_NAME}
+                <span>{APP_NAME}</span>
                 <small>v{APP_VERSION}</small>
               </h1>
             </li>

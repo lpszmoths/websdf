@@ -2,15 +2,7 @@
 
 import * as React from 'react'
 
-import sdfConverterPageStyles from '../styles/sdf-converter-page.module.css'
 import boxStyles from '../styles/boxes.module.css'
-import imageStyles from '../styles/images.module.css'
-import { SDFConverterOverflowMode } from '@/sdf/sdf-constants'
-import { generateSDF } from '@/sdf/sdf-lib'
-import { APP_NAME } from '@/app-constants'
-import ImageUploader from '@/components/image-uploader'
-import SDFOverflowModeSelector from '@/components/sdf-overflow-mode-selector'
-import SDFRadiusInput from '@/components/sdf-radius-input'
 
 export interface SectionProps extends React.PropsWithChildren {
   id?: string

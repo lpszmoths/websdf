@@ -12,22 +12,31 @@ import DownloadBtn from '@/components/download-btn'
 import SiteNav, { PAGES } from '@/components/site-nav'
 import { SDFGenerationOptions } from '@/sdf/sdf-types'
 import { SDFParameters } from '@/components/sdf-parameters'
-import Icon from '@/components/icon'
 
 export interface SDFIfyPageProps { }
 
 interface SDFOutputSectionContentProps {
   isGenerating: boolean
   outputImageURL?: string
+  progress: number
 }
 
 function SDFOutputSectionContent({
   isGenerating,
   outputImageURL,
+  progress,
 }: SDFOutputSectionContentProps) {
   let content: React.ReactNode = null
+  let progressSection: React.ReactNode = null
+
   if (isGenerating) {
     content = <p>Generating...</p>
+    progressSection = <div>
+      <progress
+        value={progress}
+        max={1}
+      ></progress>
+    </div>
   }
   else if (!outputImageURL) {
     content = <p>Input image required</p>
@@ -61,6 +70,7 @@ function SDFOutputSectionContent({
         sdfConverterPageStyles.outputContainer
       ].join(' ')
     }>
+      {progressSection}
       {content}
     </div>
   )
@@ -76,13 +86,20 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
     )
   )
   const [outputImageURL, setOutputImageURL] = React.useState<string>()
+  const [progress, setProgress] = React.useState<number>(0)
+
+  const onProgress = (newProgress: number) => {
+    setProgress(newProgress)
+  }
 
   React.useEffect(() => {
     if (inputImage) {
       setIsGenerating(true)
+      setProgress(0)
       generateSDF(
         inputImage,
         sdfGenerationOptions,
+        onProgress
       ).then((newOutputImageURL: string) => {
         setOutputImageURL(newOutputImageURL)
         setIsGenerating(false)
@@ -91,6 +108,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
     else {
       setOutputImageURL('')
       setIsGenerating(false)
+      setProgress(0)
     }
   }, [
     inputImageURL,
@@ -110,7 +128,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
                   <i
                     className='file'
                   ></i>
-                  Input image
+                  <span>Input texture</span>
                 </>
               }
               variant='secondary'
@@ -127,13 +145,13 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
                     }
                   }
                 />,
-                <>
+                <div className='small'>
                   <p>For best results, your image should be:</p>
                   <ul>
                     <li>High resolution</li>
                     <li>Black and white lineart</li>
                   </ul>
-                </>
+                </div>
               ]}
             >
             </Section>
@@ -144,7 +162,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
                   <i
                     className='parameters'
                   ></i>
-                  Parameters
+                  <span>Parameters</span>
                 </>
               }
               variant='primary'
@@ -163,7 +181,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
                 <i
                   className='cupcake'
                 ></i>
-                Output texture
+                <span>Output texture</span>
                 <span
                   className='small float-right'
                 >
@@ -180,6 +198,7 @@ export default function SDFIfyPage({ }: SDFIfyPageProps) {
             >
               <SDFOutputSectionContent
                 isGenerating={isGenerating}
+                progress={progress}
                 outputImageURL={outputImageURL}
               />
             </Section>

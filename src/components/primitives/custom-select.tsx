@@ -2,27 +2,32 @@
 
 import * as React from 'react'
 
-export interface SelectSelectorProps<T extends string> {
-  title: React.ReactNode
+export interface CustomSelectProps<T extends string>
+extends Omit<HTMLSelectElement, 'options'> {
+  heading: React.ReactNode
   value: T
   options: Record<T, string>
   onChange: (newValue: T) => void
-  disabled?: boolean
 }
 
-export function SelectSelector<T extends string>({
-  title,
+export function CustomSelect<T extends string>({
+  heading,
   value,
   options,
   onChange,
   disabled
-}: SelectSelectorProps<T>) {
+}: CustomSelectProps<T>) {
   return (
     <>
       <label>
-        <p>{title}</p>
+        {
+          heading ? (
+            <p>{heading}</p>
+          ) : null
+        }
         <div className='select-container'>
           <select
+            value={value}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               onChange(e.target.value as T)
             }}
@@ -34,9 +39,6 @@ export function SelectSelector<T extends string>({
                   <option
                     key={i}
                     value={key}
-                    selected={
-                      value == key
-                    }
                   >{options[key as T]}</option>
                 )
               )

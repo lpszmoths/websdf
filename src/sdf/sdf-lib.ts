@@ -1,6 +1,15 @@
-import { SDFChannelMode, SDFConverterOverflowMode, SDFPrecisionMode } from './sdf-constants'
+import {
+  SDFChannelMode,
+  SDFConverterOverflowMode,
+  SDFGenerationOptions,
+  SDFPrecisionMode
+} from './sdf-types'
+import {
+  NUM_SAMPLES_BY_SAMPLING_MODE
+} from './sdf-constants'
 import vertexShaderSource from './shaders/sdf-vertex-shader.glsl'
 import fragmentShaderSource from './shaders/sdf-fragment-shader.glsl'
+import { blit2D, createCanvas, createShaderProgram, drawFullQuad, setUniform1f, setUniform1i, setUniform2f, waitForFrame } from './gl-utils'
 
 enum SDFShaderUniform {
   TEXTURE = 'uTexture',
@@ -8,103 +17,19 @@ enum SDFShaderUniform {
   THRESHOLD = 'uThreshold',
   TEXEL_SIZE = 'uTexelSize',
   HIGH_PRECISION = 'uHighPrecision',
+  NUM_SAMPLES = 'uNumSamples',
+  PROGRESS = 'uProgress',
   ENABLE_RGB = 'uEnableRGB',
 }
 
-const VERTICES = [
-  -1, -1,
-  1, -1,
-  1, 1,
-  -1, 1
-]
-const UVs = [
-  0, 0,
-  1, 0,
-  1, 1,
-  0, 1
-]
-const INDICES = [
-  0, 1, 2, 3
-]
-
-/**
- * TODO docs
- */
-export interface SDFGenerationOptions {
-  radiusX: number
-  radiusY: number
-  threshold: number
-  overflowMode: SDFConverterOverflowMode
-  precisionMode: SDFPrecisionMode
-  numSamples: number
-  channelMode: SDFChannelMode
-}
-
-function createGLCanvas(
-  width: number,
-  height: number
-): HTMLCanvasElement {
-  const canvasContainer: HTMLDivElement = document.createElement('div')
-  makeHTMLElementInvisible(canvasContainer)
-
-  const canvas: HTMLCanvasElement = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
-  canvasContainer.appendChild(canvas)
-
-  document.body.appendChild(canvasContainer)
-
-  const ctx = canvas.getContext('webgl2')
-  
-  if (!ctx) {
-    throw new Error('Unable to create context. The device probably doesn\'t support WebGL 2.')
-  }
-
-  return canvas
-}
-
-function createSDFShaderProgram(gl: WebGL2RenderingContext): WebGLProgram {
-  // ensure dFdx/dFdy are available
-  //console.log(gl.getSupportedExtensions())
-
-  // create shaders
-  const vertexShader = gl.createShader(gl.VERTEX_SHADER)
-  if (!vertexShader) {
-    throw new Error('Unable to create vertex shader.')
-  }
-  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
-  if (!fragmentShader) {
-    throw new Error('Unable to create vertex shader.')
-  }
-
-  // load shader code and compile
-  gl.shaderSource(vertexShader, vertexShaderSource)
-  gl.shaderSource(fragmentShader, fragmentShaderSource)
-  gl.compileShader(vertexShader)
-  gl.compileShader(fragmentShader)
-
-  // join both shaders into a shader program
-  const shaderProgram = gl.createProgram()
-  if (!shaderProgram) {
-    throw new Error('Unable to create shader program.')
-  }
-  gl.attachShader(shaderProgram, vertexShader)
-  gl.attachShader(shaderProgram, fragmentShader)
-  gl.linkProgram(shaderProgram)
-  gl.useProgram(shaderProgram)
-
-  return shaderProgram
-}
-
-function makeHTMLElementInvisible(
-  element: HTMLElement
-) {
-  element.setAttribute('hidden', 'hidden')
-  element.style.visibility = 'hidden'
-  element.style.width = '0'
-  element.style.height = '0'
-  element.style.pointerEvents = 'none'
-  element.style.position = 'absolute'
+function createSDFShaderProgram(
+  gl: WebGL2RenderingContext
+): WebGLProgram {
+  return createShaderProgram(
+    gl,
+    vertexShaderSource,
+    fragmentShaderSource
+  )
 }
 
 function setCorrectCanvasSize(
@@ -118,6 +43,82 @@ function setCorrectCanvasSize(
   } = inputTexture
   canvas.width = srcWidth
   canvas.height = srcHeight
+}
+
+function setSDFUniforms(
+  gl: WebGL2RenderingContext,
+  shaderProgram: WebGLProgram,
+  canvas: HTMLCanvasElement,
+  {
+    precisionMode,
+    samplingMode,
+    threshold,
+    radius,
+    channelMode
+  }: SDFGenerationOptions
+) {
+  setUniform1i(
+    gl,
+    shaderProgram,
+    SDFShaderUniform.TEXTURE,
+    0
+  )
+
+  // push SDF uniforms
+  setUniform1f(
+    gl,
+    shaderProgram,
+    SDFShaderUniform.RADIUS,
+    radius
+  )
+  setUniform1f(
+    gl,
+    shaderProgram,
+    SDFShaderUniform.THRESHOLD,
+    threshold
+  )
+  setUniform1f(
+    gl,
+    shaderProgram,
+    SDFShaderUniform.NUM_SAMPLES,
+    NUM_SAMPLES_BY_SAMPLING_MODE[samplingMode]
+  )
+  setUniform1i(
+    gl,
+    shaderProgram,
+    SDFShaderUniform.HIGH_PRECISION,
+    precisionMode === SDFPrecisionMode.EXACT ? 1 : 0
+  )
+  setUniform1i(
+    gl,
+    shaderProgram,
+    SDFShaderUniform.ENABLE_RGB,
+    channelMode === SDFChannelMode.RGBA ? 1 : 0
+  )
+
+  // push other uniforms
+  const texelWidth: number = 1.0 / canvas.width
+  const texelHeight: number = 1.0 / canvas.height
+  const texelSizeLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.TEXEL_SIZE)
+  gl.uniform2f(texelSizeLocation, texelWidth, texelHeight)
+}
+
+function sleep(
+  ms: number
+) {
+  return new Promise(
+    (
+      resolve: (value?: undefined) => void,
+      reject: (reason: any) => void
+    ) => {
+      setTimeout(
+        () => {
+          resolve()
+        },
+        ms
+      )
+    }
+  )
 }
 
 /**
@@ -134,14 +135,14 @@ function setCorrectCanvasSize(
 export async function generateSDF(
   inputTexture: HTMLImageElement,
   {
-    radiusX,
-    radiusY,
+    radius,
     threshold,
     overflowMode,
     precisionMode,
-    numSamples,
+    samplingMode,
     channelMode
-  }: SDFGenerationOptions
+  }: SDFGenerationOptions,
+  onProgress: (progress: number) => void
 ): Promise<string> {
   const {
     width: srcWidth,
@@ -156,25 +157,26 @@ export async function generateSDF(
     throw new Error('The "expand as needed" option is not implemented yet')
   }
 
-  // create a temporary canvas
-  const canvas = createGLCanvas(
+  // create a temporary 2D canvas as a compositing target
+  const canvas = createCanvas(
     dstWidth,
-    dstHeight
+    dstHeight,
+    '2d'
   )
 
   // apply the shader
   await renderSDFToCanvas(
     inputTexture,
     {
-      radiusX,
-      radiusY,
+      radius,
       threshold,
       overflowMode,
       precisionMode,
-      numSamples,
+      samplingMode,
       channelMode
     },
-    canvas
+    canvas,
+    onProgress
   )
 
   // read from the canvas
@@ -183,16 +185,18 @@ export async function generateSDF(
 
 export async function renderSDFToCanvas(
   inputTexture: HTMLImageElement,
-  {
-    radiusX,
-    radiusY,
-    threshold,
+  sdfGenerationOptions: SDFGenerationOptions,
+  canvas: HTMLCanvasElement,
+  onProgress: (progress: number) => void
+): Promise<void> {
+  const {
+    radius,
     overflowMode,
     precisionMode,
-    channelMode
-  }: SDFGenerationOptions,
-  canvas: HTMLCanvasElement
-): Promise<void> {
+    samplingMode,
+  } = sdfGenerationOptions
+  const numSamples = NUM_SAMPLES_BY_SAMPLING_MODE[samplingMode]
+
   // ensure the canvas is the correct size
   setCorrectCanvasSize(
     inputTexture,
@@ -200,30 +204,22 @@ export async function renderSDFToCanvas(
     canvas
   )
 
-  // get ctx
-  const gl = canvas.getContext('webgl2')
+  // create temp buffer
+  const buffer = createCanvas(
+    canvas.width,
+    canvas.height,
+    'webgl2'
+  )
+
+  // get ctxs
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    throw new Error('Unable to create 2D context.')
+  }
+  const gl = buffer.getContext('webgl2')
   if (!gl) {
     throw new Error('Unable to create context. The device probably doesn\'t support WebGL 2.')
   }
-
-  // ensure dFdx/dFdy are available
-  console.log(gl.getSupportedExtensions())
-
-  // create shaders
-  const vertexShader = gl.createShader(gl.VERTEX_SHADER)
-  if (!vertexShader) {
-    throw new Error('Unable to create vertex shader.')
-  }
-  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
-  if (!fragmentShader) {
-    throw new Error('Unable to create vertex shader.')
-  }
-
-  // load shader code and compile
-  gl.shaderSource(vertexShader, vertexShaderSource)
-  gl.shaderSource(fragmentShader, fragmentShaderSource)
-  gl.compileShader(vertexShader)
-  gl.compileShader(fragmentShader)
 
   // join both shaders into a shader program
   const shaderProgram = createSDFShaderProgram(gl)
@@ -250,52 +246,99 @@ export async function renderSDFToCanvas(
   gl.activeTexture(gl.TEXTURE0)
   gl.bindTexture(gl.TEXTURE_2D, texture)
 
-  // create geometry buffers and assign them
-  const vertexBuffer = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(VERTICES), gl.STATIC_DRAW)
-  const uvBuffer = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer)
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(UVs), gl.STATIC_DRAW)
-  const indexBuffer = gl.createBuffer()
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(INDICES), gl.STATIC_DRAW)
-
-  // set up vertex pos
-  const vertexPosLocation = gl.getAttribLocation(shaderProgram, "aPos")
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
-  gl.enableVertexAttribArray(vertexPosLocation)
-  gl.vertexAttribPointer(vertexPosLocation, 2, gl.FLOAT, false, 0, 0)
-
-  // set up UVs
-  const uvLocation = gl.getAttribLocation(shaderProgram, "aTexCoord")
-  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer)
-  gl.enableVertexAttribArray(uvLocation)
-  gl.vertexAttribPointer(uvLocation, 2, gl.FLOAT, false, 0, 0)
-
   // set up texture uniform
-  const textureLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.TEXTURE)
-  gl.uniform1i(textureLocation, 0)
+  setUniform1i(
+    gl,
+    shaderProgram,
+    SDFShaderUniform.TEXTURE,
+    0
+  )
 
   // push SDF uniforms
-  const radiusLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.RADIUS)
-  gl.uniform2f(radiusLocation, radiusX, radiusY)
-  const thresholdLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.THRESHOLD)
-  gl.uniform1f(thresholdLocation, threshold)
-  const highPrecisionLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.HIGH_PRECISION)
-  gl.uniform1i(highPrecisionLocation, precisionMode === SDFPrecisionMode.EXACT ? 1 : 0)
-  const enableRGBLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.ENABLE_RGB)
-  gl.uniform1i(enableRGBLocation, channelMode === SDFChannelMode.RGB ? 1 : 0)
-
-  // push other uniforms
-  const texelWidth: number = 1 / canvas.width
-  const texelHeight: number = 1 / canvas.height
-  const texelSizeLocation = gl.getUniformLocation(shaderProgram, SDFShaderUniform.TEXEL_SIZE)
-  gl.uniform2f(texelSizeLocation, texelWidth, texelHeight)
+  setSDFUniforms(
+    gl,
+    shaderProgram,
+    canvas,
+    sdfGenerationOptions
+  )
 
   // render
-  gl.clearColor(0.6, 0.4, 0.5, 0.9)
+  ctx.fillStyle = '#000'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  gl.clearColor(0.0, 0.0, 0.0, 0.0)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
+
+  if (precisionMode === SDFPrecisionMode.APPROXIMATE) {
+    setUniform1f(
+      gl,
+      shaderProgram,
+      SDFShaderUniform.PROGRESS,
+      1.0
+    )
+    await doSingleRenderPass(
+      gl,
+      shaderProgram
+    )
+    blit2D(
+      buffer,
+      canvas
+    )
+    onProgress(1.0)
+  }
+  else {
+    gl.enable(gl.BLEND) // required for iterative rendering
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_ALPHA) // draw "behind"
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA) // draw "behind"
+    const numPasses = radius
+    const increment = 1.0 / (numPasses * numSamples)
+    for (let k = 0.0; k <= 1.0; k += increment) {
+      await doIterativeRenderPass(
+        gl,
+        shaderProgram,
+        1.0 - k
+      )
+      await sleep(10)
+      await waitForFrame()
+      ctx.drawImage(
+        buffer,
+        0,
+        0
+      )
+      onProgress(k)
+    }
+    
+    onProgress(1.0)
+  }
+}
+
+async function doSingleRenderPass(
+  gl: WebGL2RenderingContext,
+  shaderProgram: WebGLProgram
+) {
+  drawFullQuad(
+    gl,
+    shaderProgram
+  )
+  gl.finish()
+  await waitForFrame()
+}
+
+async function doIterativeRenderPass(
+  gl: WebGL2RenderingContext,
+  shaderProgram: WebGLProgram,
+  progress: number
+) {
+  setUniform1f(
+    gl,
+    shaderProgram,
+    SDFShaderUniform.PROGRESS,
+    progress
+  )
+  drawFullQuad(
+    gl,
+    shaderProgram
+  )
+  gl.finish()
+  await waitForFrame()
 }
 
