@@ -2,12 +2,12 @@
 
 import * as React from 'react'
 
-export interface CustomSelectProps<T extends string>
-extends Omit<HTMLSelectElement, 'options'> {
-  heading: React.ReactNode
+export interface CustomSelectProps<T extends string> {
+  heading?: React.ReactNode
   value: T
   options: Record<T, string>
   onChange: (newValue: T) => void
+  disabled?: boolean
 }
 
 export function CustomSelect<T extends string>({
