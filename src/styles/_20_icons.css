@@ -65,7 +65,17 @@ i.parameters,
   mask-image: url('../../public/icons/icon-parameters.svg');
 }
 
+i.question,
+.icon.question {
+  mask-image: url('../../public/icons/icon-question.svg');
+}
+
 i.settings,
 .icon.settings {
   mask-image: url('../../public/icons/icon-settings.svg');
+}
+
+i.text,
+.icon.text {
+  mask-image: url('../../public/icons/icon-text.svg');
 }

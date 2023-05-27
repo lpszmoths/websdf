@@ -7,6 +7,7 @@ import * as React from 'react'
 export enum PAGES {
   SDFGEN = 'sdfgen',
   KERNELGEN = 'kernelgen',
+  ABOUT = 'about',
 }
 
 export interface SiteNavProps {
@@ -34,10 +35,10 @@ export default function SiteNav({ current }: SiteNavProps) {
                 <small>v{APP_VERSION}</small>
               </h1>
             </li>
-            <li className='spacer'></li>
+            {/* <li className='spacer'></li>
             <li>
               <button>Help</button>
-            </li>
+            </li> */}
           </ul>
         </nav>
       </div>
@@ -52,15 +53,18 @@ export default function SiteNav({ current }: SiteNavProps) {
         className='overlay-container toggle-content'
       >
         <ul className='menu colors-primary'>
-          <li>
+          {/* <li>
             <Link href='/'>Home</Link>
+          </li> */}
+          <li>
+            <Link href='/sdfgen/'>SDF generator</Link>
           </li>
           <li>
-            <Link href='/sdfgen'>SDF generator</Link>
+            <Link href='/about/'>About</Link>
           </li>
-          <li>
+          {/* <li>
             <Link href='/kernelgen'>Convolution kernel generator</Link>
-          </li>
+          </li> */}
         </ul>
       </div>
     </>

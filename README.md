@@ -20,8 +20,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Credits
 
-* [ChiKareGo2 font by Giles Booth](https://www.pentacom.jp/pentacom/bitfontmaker2/gallery/?id=3780) (CC-BY)
-* [FindersKeepers font by Giles Booth](https://www.pentacom.jp/pentacom/bitfontmaker2/gallery/?id=3809) (CC-BY)
+* [ChicagoFLF font by Robin Casady](https://fontlibrary.org/en/font/chicagoflf) (public domain)
 
 ## License
 

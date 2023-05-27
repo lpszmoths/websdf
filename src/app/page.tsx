@@ -1,15 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import SiteNav from '@/components/site-nav'
+import { redirect } from 'next/navigation'
 
 export interface HomepageProps { }
 
 export default function Homepage({ }: HomepageProps) {
-
-  return (
-    <>
-      <SiteNav />
-    </>
-  )
+  redirect('/sdfgen/')
 }

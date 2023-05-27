@@ -10,18 +10,10 @@
   --small-font-family: Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "DejaVu Sans", "Bitstream Vera Sans", "Liberation Sans", Verdana, "Verdana Ref", sans-serif;
   --small-font-weight: 600;
 
-  --c0: #543344;
-  --ca1: #8b4049;
-  --ca2: #ae6a47;
-  --ca3: #caa05a;
-  --cb1: #515262;
-  --cb2: #63787d;
-  --cb3: #8ea091;
-  --c4: #c9cca1;
-
   --c00: #000;
   --c0: hsl(186, 100%, 15%);
   --c1: #ff7777;
+  --c1: #bf4040; /* 4.7:1 */
   --c2: #ffce96;
   --c3: #f1f2da;
   --c4: #fff;
